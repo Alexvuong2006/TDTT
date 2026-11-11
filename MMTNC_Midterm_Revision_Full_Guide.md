@@ -266,21 +266,30 @@ Khi phía gửi nhận được đúng **3 Duplicate ACKs**:
 ---
 
 ### 2.8. TCP Vegas (Delay-based Congestion Control)
-Brahma & Keshav đề xuất hướng tiếp cận dựa trên **Độ trễ (Delay-based)** thay vì chờ rớt gói.
+Được đề xuất bởi **Lawrence Brakmo và Larry Peterson (1994)** tại Đại học Arizona. Đây là thuật toán tiên phong đại diện cho trường phái **Dựa trên độ trễ (Delay-based Congestion Control)**, chủ động phát hiện dấu hiệu nghẽn mạng từ sự gia tăng RTT trước khi xảy ra hiện tượng tràn bộ đệm và rớt gói (Packet Loss).
 
-#### Nguyên lý vận hành của TCP Vegas
-- Ghi nhận $BaseRTT$ (RTT nhỏ nhất từng đo được - biểu thị trễ truyền lan vật lý thuần túy khi bộ đệm rỗng).
-- Trong mỗi RTT, đo $ActualRTT$ thực tế:
-  - $\text{Throughput}_{\text{expected}} = \frac{cwnd}{BaseRTT}$
-  - $\text{Throughput}_{\text{actual}} = \frac{cwnd}{ActualRTT}$
-- Tính toán lượng dữ liệu đang ứ đọng trong hàng đợi của router:
-  $\Delta = \text{Throughput}_{\text{expected}} - \text{Throughput}_{\text{actual}} = cwnd \cdot \left(1 - \frac{BaseRTT}{ActualRTT}\right)$
+#### 1. Nguyên lý đo lường thông lượng & hàng đợi
+- **Đo lường RTT cơ sở ($BaseRTT$):** Là giá trị RTT nhỏ nhất đo được trong suốt phiên truyền, đại diện cho độ trễ truyền lan hai chiều thuần túy khi mạng rảnh rỗi (bộ đệm router hoàn toàn rỗng: $\text{Queue Delay} = 0$).
+- **Đo lường RTT thực tế ($ActualRTT$):** Là RTT trung bình đo được của các gói tin trong vòng RTT hiện tại (khi hàng đợi bắt đầu có gói tin tích tụ, $ActualRTT > BaseRTT$).
+- **Thông lượng kỳ vọng (Expected Throughput):** $\text{Expected} = \frac{cwnd}{BaseRTT}$ *(Tốc độ mà kết nối lẽ ra đạt được nếu đường truyền hoàn toàn không có độ trễ hàng đợi).*
+- **Thông lượng thực tế (Actual Throughput):** $\text{Actual} = \frac{cwnd}{ActualRTT}$ *(Tốc độ truyền tải thực tế đo được trên mạng).*
 
-- So sánh $\Delta$ với hai ngưỡng cấu hình $(\alpha, \beta)$ (thường chọn $\alpha = 1, \beta = 3$ gói):
-  - Nếu $\Delta < \alpha$: Hàng đợi quá rỗng, mạng còn dư năng lực $\to cwnd = cwnd + 1$.
-  - Nếu $\Delta > \beta$: Hàng đợi bắt đầu dâng cao, nguy cơ nghẽn $\to cwnd = cwnd - 1$.
-  - Nếu $\alpha \le \Delta \le \beta$: Trạng thái cân bằng lý tưởng $\to$ giữ nguyên $cwnd$.
-- **Nhược điểm chí mạng của Vegas:** Khi chia sẻ đường truyền với TCP Reno, Vegas chủ động nhường bước và giảm $cwnd$ khi thấy trễ tăng, trong khi Reno tiếp tục bơm gói dữ liệu điên cuồng cho đến khi tràn buffer $\to$ Vegas bị Reno chiếm đoạt hầu hết băng thông.
+#### 2. Bản chất và công thức tính lượng dữ liệu ứ đọng trong hàng đợi (Queue Backlog - $\text{Diff}$ hay $\Delta$)
+Độ chênh lệch giữa thông lượng kỳ vọng và thông lượng thực tế biểu thị tốc độ dữ liệu bị kẹt lại trong bộ đệm router. Khi nhân độ chênh lệch này với $BaseRTT$, ta thu được **chính xác số lượng gói tin (packets) đang tích tụ trong hàng đợi**:
+$\Delta = \text{Diff} = (\text{Expected} - \text{Actual}) \times BaseRTT$  
+Biến đổi đại số từng bước chi tiết:  
+$\Delta = \left(\frac{cwnd}{BaseRTT} - \frac{cwnd}{ActualRTT}\right) \times BaseRTT = cwnd \cdot \left(\frac{BaseRTT}{BaseRTT} - \frac{BaseRTT}{ActualRTT}\right) = cwnd \cdot \left(1 - \frac{BaseRTT}{ActualRTT}\right)$
+- **Ý nghĩa vật lý của $\Delta$:** Đại diện cho số lượng gói tin (packets) đang nằm chờ trong bộ đệm của bottleneck router.
+
+#### 3. Quy tắc điều chỉnh cửa sổ $cwnd$ theo ngưỡng $(\alpha, \beta)$
+TCP Vegas so sánh số gói tin ứ đọng $\Delta$ với hai ngưỡng cấu hình trước $(\alpha, \beta)$ (thông số chuẩn khuyến nghị: $\alpha = 1\text{ gói}, \beta = 3\text{ gói}$):
+- **Nếu $\Delta < \alpha$ (Hàng đợi quá rỗng):** Đường truyền còn dư thừa năng lực $\implies$ Tăng tuyến tính cửa sổ: $cwnd = cwnd + 1\text{ MSS}$ mỗi RTT.
+- **Nếu $\Delta > \beta$ (Hàng đợi tích tụ quá nhiều gói):** Nguy cơ tắc nghẽn cao $\implies$ Giảm tuyến tính cửa sổ: $cwnd = cwnd - 1\text{ MSS}$ mỗi RTT để giải tỏa bộ đệm.
+- **Nếu $\alpha \le \Delta \le \beta$ (Vùng ổn định lý tưởng):** Hàng đợi router duy trì ở mức tối ưu $\implies$ Giữ nguyên kích thước $cwnd$.
+
+#### 4. Nhược điểm chí mạng của TCP Vegas
+- **Bị TCP Loss-based lấn át (Unfairness with Reno/CUBIC):** Khi chia sẻ chung đường truyền cổ chai với các luồng TCP Loss-based (như Reno, CUBIC), khi hàng đợi bắt đầu đầy, Vegas phát hiện RTT tăng nên lập tức chủ động giảm $cwnd$ để bảo vệ hàng đợi. Trong khi đó, Reno tiếp tục tăng $cwnd$ cho đến khi tràn buffer. Kết quả là Vegas liên tục nhường băng thông và bị các luồng Reno bóp nghẹt thông lượng (Starvation).
+- **Nhạy cảm với sự thay đổi định tuyến:** Nếu định tuyến thay đổi khiến đường truyền dài hơn, $BaseRTT$ bị tăng lên mà Vegas không biết, dẫn đến ước tính sai số gói trong hàng đợi.
 
 ---
 
@@ -1708,7 +1717,7 @@ Một cơ chế điều hòa lưu lượng Token Bucket có dung lượng thùng
 2. **Tổng lượng dữ liệu truyền được trong đợt burst ($S$):**  
    $S = M \cdot T = 50\text{ Mbps} \times 0.4\text{ s} = 20\text{ Megabits} = 2.5\text{ Megabytes}$
 
-   *(Kiểm chứng: $2\text{ MB}$ có sẵn trong thùng $+ (10\text{ Mbps} \times 0.4\text{ s} = 4\text{ Mbits} = 0.5\text{ MB}$ mới sinh) $= 2.5\text{ MB}$).*
+   *(Kiểm chứng: $2\text{ MB}$ có sẵn trong thùng $+ (10\text{ Mbps} \times 0.4\text{ s} = 4\text{ Mbits} = 0.5\text{ MB})$ mới sinh $= 2.5\text{ MB}$).*
 
 ---
 
