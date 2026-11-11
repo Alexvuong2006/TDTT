@@ -152,27 +152,18 @@ TCP là giao thức truyền tin cậy dựa trên bộ đếm thời gian truy�
 
 #### Thuật toán Jacobson/Karels (RFC 6298)
 TCP đo thời gian $SampleRTT$ cho mỗi phân đoạn dữ liệu được xác nhận (ACK). Sau đó tính toán giá trị trung bình trượt có trọng số (EWMA):
-1. **Ước lượng RTT làm mượt (Smoothed RTT):**
-   $$
-   EstimatedRTT = (1 - \alpha) \cdot EstimatedRTT + \alpha \cdot SampleRTT \quad (\text{với } \alpha = 0.125 = 1/8)
-   $$
-2. **Ước lượng độ lệch RTT (RTT Variation):**
-   $$
-   DevRTT = (1 - \beta) \cdot DevRTT + \beta \cdot |SampleRTT - EstimatedRTT| \quad (\text{với } \beta = 0.25 = 1/4)
-   $$
-3. **Tính toán khoảng thời gian Timeout:**
-   $$
-   RTO = EstimatedRTT + 4 \cdot DevRTT
-   $$
+1. **Ước lượng RTT làm mượt (Smoothed RTT):**  
+   $EstimatedRTT = (1 - \alpha) \cdot EstimatedRTT + \alpha \cdot SampleRTT \quad (\alpha = 0.125 = 1/8)$
+2. **Ước lượng độ lệch RTT (RTT Variation):**  
+   $DevRTT = (1 - \beta) \cdot DevRTT + \beta \cdot |SampleRTT - EstimatedRTT| \quad (\beta = 0.25 = 1/4)$
+3. **Tính toán khoảng thời gian Timeout:**  
+   $RTO = EstimatedRTT + 4 \cdot DevRTT$
+
    *(Trong thực tế, thông số khuyến nghị RFC 6298 đặt $RTO = \max(RTO, 1.0\text{s})$ khi khởi tạo).*
 
 #### Thuật toán Karn-Partridge (Karn's Algorithm)
 - **Quy tắc 1 (Mập mờ ACK):** Không lấy mẫu $SampleRTT$ cho bất kỳ phân đoạn nào đã từng được truyền lại (vì khi nhận được ACK, phía gửi không thể biết ACK này trả lời cho lần gửi đầu tiên hay lần truyền lại).
-- **Quy tắc 2 (Exponential Backoff):** Mỗi khi xảy ra Timeout cho một gói tin, giá trị $RTO$ được nhân đôi ngay lập tức:
-   $$
-   RTO_{new} = 2 \cdot RTO_{old}
-   $$
-  Cơ chế này giúp TCP giảm tải áp lực lên router đang bị nghẽn nghiêm trọng.
+- **Quy tắc 2 (Exponential Backoff):** Mỗi khi xảy ra Timeout cho một gói tin, giá trị $RTO$ được nhân đôi ngay lập tức: $RTO_{new} = 2 \cdot RTO_{old}$. Cơ chế này giúp TCP giảm tải áp lực lên router đang bị nghẽn nghiêm trọng.
 
 ---
 
@@ -198,18 +189,14 @@ Giả sử hai luồng gửi $x_1$ và $x_2$ cùng chia sẻ một bottleneck li
 #### Ba pha vận hành của TCP Tahoe
 1. **Khởi động chậm (Slow Start - SS):**
    - Bắt đầu với $cwnd = 1\text{ MSS}$.
-   - Với mỗi gói ACK mới nhận về:
-     $$
-     cwnd = cwnd + 1\text{ MSS}
-     $$
+   - Với mỗi gói ACK mới nhận về: $cwnd = cwnd + 1\text{ MSS}$
+
    - Sau mỗi vòng thời gian trễ $1\text{ RTT}$, giá trị $cwnd$ tăng **gấp đôi** (tăng trưởng hàm mũ: $1 \to 2 \to 4 \to 8 \to 16 \dots$).
    - Kết thúc Slow Start khi: $cwnd \ge ssthresh$ (Slow Start Threshold) hoặc khi xảy ra mất gói.
 2. **Tránh tắc nghẽn (Congestion Avoidance - CA):**
    - Kích hoạt khi $cwnd \ge ssthresh$.
-   - Mục đích: Dò tìm băng thông thận trọng hơn. Với mỗi ACK nhận được:
-     $$
-     cwnd = cwnd + \frac{1}{cwnd}\text{ MSS}
-     $$
+   - Mục đích: Dò tìm băng thông thận trọng hơn. Với mỗi ACK nhận được: $cwnd = cwnd + \frac{1}{cwnd}\text{ MSS}$
+
    - Sau mỗi $1\text{ RTT}$, giá trị $cwnd$ chỉ tăng đúng **+1 MSS** (tăng trưởng tuyến tính theo thời gian).
 3. **Phát lại nhanh (Fast Retransmit):**
    - Khi nhận liên tiếp **3 Duplicate ACKs** (tổng cộng 4 ACK giống nhau cho cùng một số thứ tự sequence number):
@@ -218,14 +205,9 @@ Giả sử hai luồng gửi $x_1$ và $x_2$ cùng chia sẻ một bottleneck li
 
 #### Phản ứng khi mất gói của TCP Tahoe (ĐIỂM YẾU LỚN NHẤT)
 Bất kể mất gói do **3 Duplicate ACKs** hay do **RTO Timeout**:
-- Cập nhật ngưỡng:
-  $$
-  ssthresh = \max\left(\frac{cwnd}{2}, 2\text{ MSS}\right)
-  $$
-- Ép cửa sổ về gốc:
-  $$
-  cwnd = 1\text{ MSS}
-  $$
+- Cập nhật ngưỡng: $ssthresh = \max\left(\frac{cwnd}{2}, 2\text{ MSS}\right)$
+- Ép cửa sổ về gốc: $cwnd = 1\text{ MSS}$
+
 - Trạng thái kế tiếp: Quay về **Slow Start**.
 - **Hậu quả:** Làm rỗng đường ống (empty pipeline), lãng phí tài nguyên mạng, thông lượng bị sụt giảm nghiêm trọng hình răng cưa sâu hoắm.
 
@@ -236,28 +218,19 @@ TCP Reno ra đời nhằm khắc phục nhược điểm của Tahoe bằng các
 
 #### Cơ chế Fast Recovery từng bước chi tiết (Chuẩn RFC 5681)
 Khi phía gửi nhận được đúng **3 Duplicate ACKs**:
-- **Bước 1 (Thiết lập ngưỡng):**
-  $$
-  ssthresh = \max\left(\frac{cwnd}{2}, 2\text{ MSS}\right)
-  $$
+- **Bước 1 (Thiết lập ngưỡng):** $ssthresh = \max\left(\frac{cwnd}{2}, 2\text{ MSS}\right)$
 - **Bước 2 (Fast Retransmit):** Truyền lại ngay phân đoạn bị thiếu.
-- **Bước 3 (Thổi phồng cửa sổ - Window Inflation):**
-  $$
-  cwnd = ssthresh + 3\text{ MSS}
-  $$
+- **Bước 3 (Thổi phồng cửa sổ - Window Inflation):** $cwnd = ssthresh + 3\text{ MSS}$
+
   *(Lý do cộng 3: 3 Duplicate ACKs là bằng chứng cho thấy có đúng 3 phân đoạn gửi sau đã đến được máy nhận thành công và đang nằm trong bộ đệm của máy nhận, nghĩa là 3 phân đoạn đó đã rời khỏi mạng!)*
 - **Bước 4 (Trong trạng thái Fast Recovery):**
-  - Mỗi khi nhận thêm một Duplicate ACK tiếp theo:
-    $$
-    cwnd = cwnd + 1\text{ MSS}
-    $$
+  - Mỗi khi nhận thêm một Duplicate ACK tiếp theo: $cwnd = cwnd + 1\text{ MSS}$
+
     (Vì thêm một gói nữa đã rời mạng). Nếu giá trị $cwnd$ mới cho phép, phía gửi có thể phát thêm các gói tin mới chưa gửi.
 - **Bước 5 (Thoát Fast Recovery khi nhận New ACK):**
   - Khi nhận được một ACK xác nhận dữ liệu mới (New ACK - xác nhận gói bị mất đã được máy nhận tiếp nhận):
-  - **Thu hẹp cửa sổ (Window Deflation):**
-    $$
-    cwnd = ssthresh
-    $$
+  - **Thu hẹp cửa sổ (Window Deflation):** $cwnd = ssthresh$
+
   - Chuyển trạng thái sang **Congestion Avoidance** (tiếp tục tăng tuyến tính +1 MSS / RTT).
 
 > [!WARNING]
@@ -284,14 +257,16 @@ Khi phía gửi nhận được đúng **3 Duplicate ACKs**:
 ### 2.7. Băng thông BDP cao & Hạn chế của Loss-based TCP trên mạng LFN
 - Khái niệm **LFN (Long Fat Networks - RFC 7323):** Mạng có tích số Băng thông - Độ trễ rất lớn (High Bandwidth-Delay Product: $BDP = \text{Bandwidth} \times RTT$).  
   *Ví dụ:* Đường truyền $10\text{ Gbps}$ với $RTT = 100\text{ ms} \implies BDP = 10^9\text{ bits} \approx 125\text{ MB}$. Với $MSS = 1500\text{ bytes}$, cần cửa sổ $cwnd \approx 83,333\text{ packets}$.
-- **Công thức Throughput Mathis:**
-  $$
-  \text{Throughput} \le \frac{MSS}{RTT} \sqrt{\frac{3}{2p}} \approx \frac{1.22 \cdot MSS}{RTT \cdot \sqrt{p}}
-  $$
+**Công thức Throughput Mathis:**
+
+$$
+\text{Throughput} \le \frac{MSS}{RTT} \sqrt{\frac{3}{2p}} \approx \frac{1.22 \cdot MSS}{RTT \cdot \sqrt{p}}
+$$
+
   *(với $p$ là xác suất mất gói).*
 - **Nghịch lý của Reno trên mạng LFN:**
   - Nếu mất gói một lần, Reno giảm cửa sổ đi 50% ($83,333 / 2 \approx 41,666\text{ packets}$).
-  - Với tốc độ tăng tuyến tính $+1\text{ MSS}$ mỗi RTT ($100\text{ ms}$), Reno cần $41,666\text{ RTT} \approx 4,166\text{ giây} \approx 70\text{ phút}$ chỉ để phục hồi lại mức thông lượng ban đầu!
+  - Với tốc độ tăng tuyến tính $+1\text{ MSS}$ mỗi RTT ($100\text{ ms}$), Reno cần $41,666\text{ RTT} \approx 4,166\text{ s} \approx 70\text{ min}$ chỉ để phục hồi lại mức thông lượng ban đầu!
   - Để duy trì đường truyền $10\text{ Gbps}$, tỷ lệ mất gói yêu cầu phải nhỏ hơn $10^{-10}$ (điều không tưởng trên thực tế).
 
 ---
@@ -302,16 +277,11 @@ Brahma & Keshav đề xuất hướng tiếp cận dựa trên **Độ trễ (De
 #### Nguyên lý vận hành của TCP Vegas
 - Ghi nhận $BaseRTT$ (RTT nhỏ nhất từng đo được - biểu thị trễ truyền lan vật lý thuần túy khi bộ đệm rỗng).
 - Trong mỗi RTT, đo $ActualRTT$ thực tế:
-  $$
-  \text{Throughput}_{\text{expected}} = \frac{cwnd}{BaseRTT}
-  $$
-  $$
-  \text{Throughput}_{\text{actual}} = \frac{cwnd}{ActualRTT}
-  $$
+  - $\text{Throughput}_{\text{expected}} = \frac{cwnd}{BaseRTT}$
+  - $\text{Throughput}_{\text{actual}} = \frac{cwnd}{ActualRTT}$
 - Tính toán lượng dữ liệu đang ứ đọng trong hàng đợi của router:
-  $$
-  \Delta = \text{Throughput}_{\text{expected}} - \text{Throughput}_{\text{actual}} = cwnd \cdot \left(1 - \frac{BaseRTT}{ActualRTT}\right)
-  $$
+  $\Delta = \text{Throughput}_{\text{expected}} - \text{Throughput}_{\text{actual}} = cwnd \cdot \left(1 - \frac{BaseRTT}{ActualRTT}\right)$
+
 - So sánh $\Delta$ với hai ngưỡng cấu hình $(\alpha, \beta)$ (thường chọn $\alpha = 1, \beta = 3$ gói):
   - Nếu $\Delta < \alpha$: Hàng đợi quá rỗng, mạng còn dư năng lực $\to cwnd = cwnd + 1$.
   - Nếu $\Delta > \beta$: Hàng đợi bắt đầu dâng cao, nguy cơ nghẽn $\to cwnd = cwnd - 1$.
@@ -325,17 +295,16 @@ CUBIC (Ha, Rhee, Xu - 2008) được thiết kế đặc thù cho mạng tốc �
 
 #### Hàm tăng trưởng cửa sổ bậc ba
 Quy mô cửa sổ của CUBIC là một hàm bậc ba theo thời gian thực $t$ (tính bằng giây) kể từ lần giảm cửa sổ gần nhất:
+
 $$
 W_{cubic}(t) = C \cdot (t - K)^3 + W_{max}
 $$
+
 Trong đó:
 - $W_{max}$: Kích thước cửa sổ ngay trước khi xảy ra sự kiện mất gói gần nhất.
 - $\beta$: Hệ số giảm nhân khi mất gói (CUBIC chọn $\beta = 0.7$, tức chỉ giảm 30%, giữ lại 70% cửa sổ, nhẹ nhàng hơn Reno giảm 50%).
 - $C$: Hằng số tỷ lệ co dãn (mặc định $C = 0.4$).
-- $K$: Khoảng thời gian cần thiết để cửa sổ tăng từ $W_{max} \cdot \beta$ trở lại $W_{max}$ khi không có mất gói:
-  $$
-  K = \sqrt[3]{\frac{W_{max} \cdot (1 - \beta)}{C}} = \sqrt[3]{\frac{W_{max} \cdot 0.3}{0.4}}
-  $$
+- $K$: Khoảng thời gian cần thiết để cửa sổ tăng từ $W_{\max} \cdot \beta$ trở lại $W_{\max}$ khi không có mất gói: $K = \sqrt[3]{\frac{W_{\max} \cdot (1 - \beta)}{C}} = \sqrt[3]{\frac{W_{\max} \cdot 0.3}{0.4}}$
 
 #### Hai giai đoạn tăng trưởng của CUBIC
 1. **Pha Lõm (Concave Region - khi $t < K$):**
@@ -347,10 +316,7 @@ Trong đó:
 
 #### Tính chất vượt trội của CUBIC
 - **Độc lập với RTT (RTT-Fairness):** Hàm tăng trưởng $W_{cubic}(t)$ phụ thuộc vào đồng hồ thời gian thực $t$ chứ không phụ thuộc vào số vòng lặp RTT. Các luồng có RTT ngắn và RTT dài có tốc độ tăng cửa sổ ngang nhau.
-- **Chế độ thân thiện với Reno (TCP-Friendly Mode):** Trên các đường truyền băng thông nhỏ và RTT ngắn nơi Reno chiếm ưu thế, CUBIC tự động tính toán cửa sổ theo mô hình Reno $W_{reno}(t)$ và luôn chọn:
-  $$
-  cwnd = \max(W_{cubic}(t), W_{reno}(t))
-  $$
+- **Chế độ thân thiện với Reno (TCP-Friendly Mode):** Trên các đường truyền băng thông nhỏ và RTT ngắn nơi Reno chiếm ưu thế, CUBIC tự động tính toán cửa sổ theo mô hình Reno $W_{\text{reno}}(t)$ và luôn chọn: $cwnd = \max(W_{\text{cubic}}(t), W_{\text{reno}}(t))$.
 
 ---
 
@@ -366,20 +332,16 @@ BBR (Cardwell, Cheng, Gunn, Yuchung Cheng, Van Jacobson - Google 2016) là thu�
 #### Điểm vận hành tối ưu Kleinrock
 Theo lý thuyết hàng đợi Kleinrock:
 - Tốc độ phát tối ưu đúng bằng băng thông nút thắt: $\text{Rate} = BtlBw$ (Bottleneck Bandwidth).
-- Lượng dữ liệu in-flight tối ưu đúng bằng:
-  $$
-  \text{BDP} = BtlBw \times RTprop
-  $$
+- Lượng dữ liệu in-flight tối ưu đúng bằng: $\text{BDP} = BtlBw \times RTprop$
+
   *(với $RTprop$ là Round-Trip Propagation Time khi hàng đợi rỗng).*
 - Tại điểm này: Thông lượng đạt cực đại (Full Throughput) trong khi độ trễ đạt cực tiểu (Minimum Delay) và hàng đợi rỗng hoàn toàn!
 
 #### Bốn trạng thái hoạt động của BBR
 1. **Startup:** Tăng tốc độ phát theo hàm mũ (nhân đôi mỗi RTT với hệ số gain $2/\ln 2 \approx 2.89$) để phát hiện nhanh giá trị $BtlBw$.
 2. **Drain:** Khi phát hiện $BtlBw$ chững lại, giảm tốc độ phát (với gain $1/2.89$) để xả sạch toàn bộ hàng đợi phát sinh trong pha Startup.
-3. **ProbeBW:** Pha vận hành ổn định. Chu kỳ 8 RTT với các hệ số điều chỉnh tốc độ (Pacing Gain):
-   $$
-   [1.25, \; 0.75, \; 1.0, \; 1.0, \; 1.0, \; 1.0, \; 1.0, \; 1.0]
-   $$
+3. **ProbeBW:** Pha vận hành ổn định. Chu kỳ 8 RTT với các hệ số điều chỉnh tốc độ (Pacing Gain): $[1.25, \; 0.75, \; 1.0, \; 1.0, \; 1.0, \; 1.0, \; 1.0, \; 1.0]$.
+
    (1 vòng thăm dò băng thông cao hơn, 1 vòng xả hàng đợi, 6 vòng duy trì ổn định).
 4. **ProbeRTT:** Cứ mỗi 10 giây một lần, BBR hạ cửa sổ phát xuống còn đúng **4 gói tin (4 MSS)** trong vòng 200 ms để làm rỗng hàng đợi hoàn toàn, từ đó đo đạc lại giá trị $RTprop$ thực sự của liên kết.
 
@@ -434,17 +396,13 @@ Router bao gồm 3 thành phần phần cứng cốt lõi:
 ```
 
 #### Bài toán kích thước bộ đệm Router (Buffer Sizing)
-- **Quy tắc kinh điển (Rule of Thumb - Villamizar & Song 1994):**
-  $$
-  B = RTT \times C
-  $$
+- **Quy tắc kinh điển (Rule of Thumb - Villamizar & Song 1994):** $B = RTT \times C$
+
   *(với $C$ là băng thông liên kết, $RTT$ là thời gian trễ khứ hồi trung bình, thường lấy chuẩn 250 ms).*
   - *Ý nghĩa:* Xuất phát từ cơ chế AIMD của TCP Reno. Khi xảy ra mất gói, Reno giảm cửa sổ đi 50%. Để đường truyền luôn bận 100% (không bị rỗng trong thời gian đợi ACK quay về), bộ đệm router cần chứa đủ lượng dữ liệu bị thiếu hụt này, tức đúng bằng dung lượng $RTT \times C$.
 - **Mô hình Stanford (Appenzeller, Keshav, McKeown - SIGCOMM 2004):**
-  Khi có số lượng lớn $N$ luồng TCP độc lập chạy đồng thời qua một bottleneck router lõi:
-  $$
-  B = \frac{RTT \times C}{\sqrt{N}}
-  $$
+  Khi có số lượng lớn $N$ luồng TCP độc lập chạy đồng thời qua một bottleneck router lõi: $B = \frac{RTT \times C}{\sqrt{N}}$
+
   - *Bản chất toán học:* Các luồng TCP độc lập không bị mất gói cùng một lúc (không đồng bộ). Dựa trên Định lý Giới hạn Trung tâm (Central Limit Theorem), độ biến thiên tổng thể của lượng dữ liệu đến giảm theo tỷ lệ $1/\sqrt{N}$.
   - *Ý nghĩa thực tiễn:* Với một liên kết 40 Gbps gồm 10,000 luồng TCP, bộ đệm yêu cầu giảm từ 1 GB (theo Rule of Thumb) xuống chỉ còn 10 MB (theo Stanford), giúp tiết kiệm hàng triệu USD chi phí phần cứng và giảm trễ hàng đợi đáng kể.
 
@@ -481,15 +439,18 @@ RED là thuật toán AQM kinh điển và quan trọng nhất, vận hành dự
 
 #### 1. Tính toán độ dài hàng đợi trung bình ($avg$)
 Sử dụng bộ lọc trung bình trượt có trọng số theo hàm mũ (EWMA):
+
 $$
 avg \leftarrow (1 - w_q) \cdot avg + w_q \cdot q
 $$
+
 - $q$: Độ dài hàng đợi thực tế tức thời tại thời điểm gói tin đến.
 - $w_q$: Trọng số hàng đợi (thường chọn $w_q = 0.002$). Trọng số nhỏ giúp lọc bỏ các đợt bùng nổ lưu lượng tạm thời (transient bursts), ngăn không cho hệ thống phản ứng thái quá.
 
 *Trường hợp hàng đợi rỗng (Queue is Idle):* Nếu router phát hiện hàng đợi bị rỗng trong một khoảng thời gian $idle\_time$, $avg$ được suy giảm nhân theo số lượng gói tin giả định $m$:
+
 $$
-avg \leftarrow avg \cdot (1 - w_q)^m \quad \text{với } m = \frac{idle\_time}{\text{transmission\_time}}
+avg \leftarrow avg \cdot (1 - w_q)^m \quad \text{with } m = \frac{\text{idle\_time}}{\text{transmission\_time}}
 $$
 
 #### 2. Tính toán xác suất loại bỏ gói tin ($p_b$ và $p_a$)
@@ -514,14 +475,10 @@ Xác suất Drop (P)
    - Xác suất loại bỏ: $P = 0$ (Chấp nhận 100% gói tin).
 2. **Vùng cảnh báo ($min_{th} \le avg < max_{th}$):**
    - Nguy cơ tắc nghẽn chớm xuất hiện.
-   - Tính xác suất nền tảng $p_b$ (tăng tuyến tính từ $0$ đến $max_p$):
-     $$
-     p_b = max_p \cdot \frac{avg - min_{th}}{max_{th} - min_{th}}
-     $$
-   - Điều chỉnh xác suất thực tế $p_a$ theo biến đếm gói $count$:
-     $$
-     p_a = \frac{p_b}{1 - count \cdot p_b}
-     $$
+   - Tính xác suất nền tảng $p_b$ (tăng tuyến tính từ $0$ đến $max_p$): $p_b = max_p \cdot \frac{avg - min_{th}}{max_{th} - min_{th}}$
+
+   - Điều chỉnh xác suất thực tế $p_a$ theo biến đếm gói $count$: $p_a = \frac{p_b}{1 - count \cdot p_b}$
+
      *(Biến $count$ đếm số gói tin liên tiếp được chấp nhận kể từ gói bị drop gần nhất. Khi $count$ tăng, $p_a$ tăng dần, đảm bảo khoảng cách giữa hai gói bị drop phân bố đều đặn, triệt tiêu hoàn toàn hiện tượng rớt gói chùm - bursty drops).*
 3. **Vùng nghẽn nghiêm trọng ($avg \ge max_{th}$):**
    - Hàng đợi vượt ngưỡng an toàn.
@@ -562,10 +519,12 @@ Chất lượng dịch vụ (QoS) là tập hợp các công nghệ nhằm phân
 Bốn tham số định lượng cơ bản của mạng IP:
 1. **Băng thông (Bandwidth / Throughput):** Tốc độ truyền tải dữ liệu hữu ích tối đa qua đường truyền, đo bằng bps (bit per second).
 2. **Độ trễ toàn trình (One-Way End-to-End Delay / Latency):**
-   Tổng thời gian một gói tin đi từ nguồn tới đích:
-   $$
-   \text{Delay}_{\text{total}} = \text{Delay}_{\text{prop}} + \text{Delay}_{\text{trans}} + \text{Delay}_{\text{proc}} + \text{Delay}_{\text{queue}}
-   $$
+Tổng thời gian một gói tin đi từ nguồn tới đích:
+
+$$
+\text{Delay}_{\text{total}} = \text{Delay}_{\text{prop}} + \text{Delay}_{\text{trans}} + \text{Delay}_{\text{proc}} + \text{Delay}_{\text{queue}}
+$$
+
    - $\text{Delay}_{\text{prop}} = \frac{d}{s}$: Trễ truyền lan vật lý ($d$ là cự ly cáp, $s \approx 2 \times 10^8\text{ m/s}$ trong sợi quang). Cố định, không thể tối ưu bằng phần mềm.
    - $\text{Delay}_{\text{trans}} = \frac{L}{R}$: Trễ phát tín hiệu ($L$ là kích thước gói, $R$ là tốc độ cổng).
    - $\text{Delay}_{\text{proc}}$: Trễ xử lý bên trong router (tra bảng FIB, kiểm tra checksum, cập nhật TTL). Rất nhỏ (vài micro-giây với phần cứng ASIC).
@@ -633,14 +592,9 @@ Gói tin đến ---> [ Kiểm tra Thẻ ] ---> Gói tin đi (Tốc độ đỉnh
 Giả sử thùng đang đầy ắp $b$ tokens, một đợt bùng nổ lưu lượng dữ liệu khổng lồ ập đến và được phát đi với tốc độ tối đa của đường truyền $M$ ($M > r$).
 
 1. **Thời gian bùng nổ tối đa (Maximum Burst Duration - $T$):**
-   Trong khoảng thời gian $T$, tổng số token tiêu thụ bằng tổng số token có sẵn ban đầu ($b$) cộng với số token mới sinh ra trong thời gian đó ($r \cdot T$):
-   $$
-   b + r \cdot T = M \cdot T \implies T = \frac{b}{M - r}
-   $$
-2. **Tổng lượng dữ liệu tối đa truyền được trong đợt bùng nổ ($S$):**
-   $$
-   S = M \cdot T = \frac{b \cdot M}{M - r}
-   $$
+   Trong khoảng thời gian $T$, tổng số token tiêu thụ bằng tổng số token có sẵn ban đầu ($b$) cộng với số token mới sinh ra trong thời gian đó ($r \cdot T$): $b + r \cdot T = M \cdot T \implies T = \frac{b}{M - r}$
+
+2. **Tổng lượng dữ liệu tối đa truyền được trong đợt bùng nổ ($S$):** $S = M \cdot T = \frac{b \cdot M}{M - r}$
 
 > **So sánh then chốt:** Leaky Bucket ép tốc độ ra luôn bằng hằng số $r$ (không cho phép burst). Token Bucket cho phép lưu lượng **truyền bùng nổ ở tốc độ cực đại $M$** trong thời gian ngắn $T$, nhưng kiểm soát tốc độ truyền trung bình trong dài hạn không vượt quá $r$.
 
@@ -684,10 +638,8 @@ Khi hàng đợi chứa nhiều gói tin từ các luồng khác nhau, bộ lậ
    - Giả lập cơ chế Generalized Processor Sharing (GPS) - phân chia băng thông công bằng bit-by-bit giữa các luồng hoạt động.
 4. **Weighted Fair Queuing (WFQ):**
    - Gán cho mỗi luồng $i$ một trọng số $w_i$ (trong thiết bị Cisco, trọng số tự động gán theo giá trị IP Precedence: $w_i = \text{IP\_Precedence} + 1$).
-   - Tính toán **Thời gian hoàn thành ảo (Virtual Finish Time - $F_i^k$)** cho gói tin thứ $k$ của luồng $i$:
-     $$
-     F_i^k = \max(F_i^{k-1}, V(a_i^k)) + \frac{L_i^k}{w_i}
-     $$
+   - Tính toán **Thời gian hoàn thành ảo (Virtual Finish Time - $F_i^k$)** cho gói tin thứ $k$ của luồng $i$: $F_i^k = \max(F_i^{k-1}, V(a_i^k)) + \frac{L_i^k}{w_i}$
+
      *(với $a_i^k$ là thời điểm gói đến, $L_i^k$ là độ dài gói, $V(t)$ là thời gian ảo của hệ thống).*
    - **Nguyên tắc phát:** Gói tin nào có giá trị $F$ nhỏ nhất trong tất cả các hàng đợi sẽ được phát ra trước. Đảm bảo luồng có trọng số lớn hơn hoặc gói tin ngắn hơn sẽ được ưu tiên chuyển tiếp nhanh hơn.
 5. **Deficit Round Robin (DRR - Shreedhar & Varghese 1996):**
@@ -791,9 +743,11 @@ Trường ToS (Type of Service) trong IPv4 Header hoặc Traffic Class trong IPv
 Cung cấp dịch vụ chuyển tiếp có bảo đảm với 4 lớp dịch vụ độc lập (**Class 1 đến Class 4**). Trong mỗi lớp lại phân chia thành 3 mức độ ưu tiên loại bỏ gói (**Drop Precedence 1, 2, 3**: Thấp, Trung bình, Cao).
 
 **Cấu trúc nhị phân của DSCP nhóm AF:**
+
 $$
-\text{Định dạng: } [a_1 a_2 a_3] \; [d_1 d_2] \; [0]
+[a_1 a_2 a_3] \; [d_1 d_2] \; [0]
 $$
+
 - 3 bit đầu $[a_1 a_2 a_3]$ xác định **Lớp dịch vụ (Class 1-4)**:
   - Class 1: `001`
   - Class 2: `010`
@@ -1027,10 +981,12 @@ Khác hoàn toàn với Distance Vector, trong Link-State:
 - **Area 0 (Backbone Area):** Vùng xương sống bắt buộc. Mọi vùng non-backbone (Area 1, Area 2...) đều phải có kết nối vật lý hoặc logic (Virtual Link) trực tiếp vào Area 0.
 - **Router biên vùng (ABR - Area Border Router):** Router có cổng nằm ở ít nhất hai vùng khác nhau (kết nối Area non-backbone vào Area 0).
 - **Router biên AS (ASBR - Autonomous System Boundary Router):** Router kết nối mạng OSPF với một hệ thống định tuyến khác (chạy BGP, RIP, hoặc Static).
-- **Công thức tính OSPF Cost chuẩn:**
-  $$
-  \text{Cost} = \frac{\text{Reference Bandwidth}}{\text{Interface Bandwidth}} = \frac{10^8 \text{ bps}}{\text{Băng thông cổng (bps)}} = \frac{100 \text{ Mbps}}{\text{Băng thông cổng (Mbps)}}
-  $$
+**Công thức tính OSPF Cost chuẩn:**
+
+$$
+\text{Cost} = \frac{\text{Reference Bandwidth}}{\text{Interface Bandwidth}} = \frac{10^8 \text{ bps}}{\text{Interface Bandwidth (bps)}} = \frac{100 \text{ Mbps}}{\text{Interface Bandwidth (Mbps)}}
+$$
+
   *(Lưu ý: Mặc định cổng 100 Mbps có Cost = 1, cổng 1 Gbps cũng có Cost = 1. Để phân biệt tốc độ cao, cần cấu hình lệnh: `auto-cost reference-bandwidth 1000` hoặc cao hơn).*
 
 ---
@@ -1218,10 +1174,8 @@ IPv6 xử lý các tùy chọn bổ sung thông qua kiến trúc **Chuỗi tiêu
 ---
 
 ### 6.4. Định dạng và Không gian địa chỉ IPv6
-- **Quy mô không gian:** Chiều dài 128 bits, cung cấp:
-  $$
-  2^{128} \approx 3.4 \times 10^{38} \text{ địa chỉ}
-  $$
+- **Quy mô không gian:** Chiều dài 128 bits, cung cấp $2^{128} \approx 3.4 \times 10^{38}$ địa chỉ.
+
   (Đủ để cấp hàng nghìn tỷ địa chỉ cho mỗi milimet vuông bề mặt Trái Đất).
 - **Quy cách biểu diễn:** 128 bits được chia thành **8 nhóm (hextets)**, mỗi nhóm gồm 16 bits biểu diễn bằng 4 chữ số thập lục phân (hex), phân cách nhau bằng dấu hai chấm `:`.  
   *Ví dụ:* `2001:0db8:0000:0000:0000:ff00:0042:8329`
@@ -1575,7 +1529,7 @@ Một thiết bị chuyển mạch OpenFlow duy trì một chuỗi các **Bảng
 | **Độ lệch RTT (DevRTT)** | $DevRTT = (1-\beta) DevRTT + \beta \cdot \lvert SampleRTT - EstimatedRTT \rvert$ | $\beta = 0.25 = 1/4$ (Độ biến thiên trễ khứ hồi) |
 | **Khoảng Timeout RTO** | $RTO = EstimatedRTT + 4 \cdot DevRTT$ | Bộ đếm thời gian truyền lại của TCP (Karn-Partridge: nhân đôi khi timeout) |
 | **Throughput Mathis (TCP)** | $\text{Throughput} \le \frac{MSS}{RTT} \sqrt{\frac{3}{2p}} \approx \frac{1.22 \cdot MSS}{RTT \cdot \sqrt{p}}$ | Giới hạn thông lượng tối đa của TCP Reno qua tỷ lệ mất gói $p$ |
-| **Cửa sổ CUBIC** | $W_{cubic}(t) = C(t - K)^3 + W_{max} \text{ với } K = \sqrt[3]{\frac{W_{max} \cdot 0.3}{C}}$ | $C = 0.4, \beta = 0.7$ (Giảm 30% khi mất gói, độc lập RTT) |
+| **Cửa sổ CUBIC** | $W_{cubic}(t) = C(t - K)^3 + W_{max} , \; K = \sqrt[3]{\frac{W_{max} \cdot 0.3}{C}}$ | $C = 0.4, \beta = 0.7$ (Giảm 30% khi mất gói, độc lập RTT) |
 | **Điểm tối ưu Kleinrock** | $\text{Rate} = BtlBw; \quad \text{Inflight} = BDP = BtlBw \times RTprop$ | Trạng thái vận hành tối ưu của TCP BBR (Full Throughput, Min Delay) |
 | **Buffer Sizing (Rule of Thumb)** | $B = RTT \times C$ | Kích thước bộ đệm router kinh điển cho 1 luồng TCP Reno |
 | **Buffer Sizing (Stanford)** | $B = \frac{RTT \times C}{\sqrt{N}}$ | Kích thước bộ đệm cho $N$ luồng TCP độc lập qua core router |
@@ -1736,48 +1690,36 @@ Một router lõi kết nối đường truyền cáp quang có băng thông $C 
 3. Kích thước bộ đệm theo mô hình Stanford giảm bao nhiêu lần so với Rule of Thumb?
 
 #### Lời giải chi tiết
-1. **Theo Quy tắc kinh điển (Rule of Thumb):**
-   $$
-   B_{\text{classic}} = RTT \times C = (200 \times 10^{-3}\text{ s}) \times (10 \times 10^9\text{ bps}) = 2 \times 10^9\text{ bits}
-   $$
-   Đổi sang Megabytes:
-   $$
-   B_{\text{classic}} = \frac{2 \times 10^9\text{ bits}}{8 \times 10^6\text{ bits/MB}} = 250\text{ MB}
-   $$
-2. **Theo Mô hình Stanford:**
-   $$
-   B_{\text{stanford}} = \frac{RTT \times C}{\sqrt{N}} = \frac{250\text{ MB}}{\sqrt{400}} = \frac{250\text{ MB}}{20} = 12.5\text{ MB}
-   $$
-3. **Mức độ suy giảm:**
-   $$
-   \text{Tỷ lệ giảm} = \frac{B_{\text{classic}}}{B_{\text{stanford}}} = \sqrt{N} = \sqrt{400} = 20\text{ lần}
-   $$
+1. **Theo Quy tắc kinh điển (Rule of Thumb):**  
+   $B_{\text{classic}} = RTT \times C = (200 \times 10^{-3}\text{ s}) \times (10 \times 10^9\text{ bps}) = 2 \times 10^9\text{ bits}$  
+   Đổi sang Megabytes: $B_{\text{classic}} = \frac{2 \times 10^9\text{ bits}}{8 \times 10^6\text{ bits/MB}} = 250\text{ MB}$
+
+2. **Theo Mô hình Stanford:**  
+   $B_{\text{stanford}} = \frac{RTT \times C}{\sqrt{N}} = \frac{250\text{ MB}}{\sqrt{400}} = \frac{250\text{ MB}}{20} = 12.5\text{ MB}$
+
+3. **Mức độ suy giảm:**  
+   $\text{Reduction Ratio} = \frac{B_{\text{classic}}}{B_{\text{stanford}}} = \sqrt{N} = \sqrt{400} = 20 $
 
 ---
 
 ### 9.3. Dạng bài 3: Tính toán Xác suất Loại bỏ gói của RED
 
 #### Đề bài mẫu
-Một bộ định tuyến kích hoạt thuật toán RED với các thông số cấu hình: $min_{th} = 20\text{ gói}$, $max_{th} = 80\text{ gói}$, và xác suất drop tối đa $max_p = 0.1$.
-1. Tại thời điểm xét, độ dài hàng đợi trung bình tính được là $avg = 50\text{ gói}$. Tính xác suất nền tảng $p_b$.
+Một bộ định tuyến kích hoạt thuật toán RED với các thông số cấu hình: $min_{th} = 20\text{ packets}$, $max_{th} = 80\text{ packets}$, và xác suất drop tối đa $max_p = 0.1$.
+1. Tại thời điểm xét, độ dài hàng đợi trung bình tính được là $avg = 50\text{ packets}$. Tính xác suất nền tảng $p_b$.
 2. Giả sử đã có liên tiếp $count = 15$ gói tin được chấp nhận vào hàng đợi kể từ lần drop gói gần nhất. Hãy tính xác suất loại bỏ thực tế $p_a$ áp dụng cho gói tin hiện tại.
-3. Nếu độ dài hàng đợi trung bình tăng vọt lên $avg = 85\text{ gói}$, xác suất drop sẽ là bao nhiêu?
+3. Nếu độ dài hàng đợi trung bình tăng vọt lên $avg = 85\text{ packets}$, xác suất drop sẽ là bao nhiêu?
 
 #### Lời giải chi tiết
-1. **Tính xác suất nền tảng $p_b$:**
-   Vì $min_{th} \le avg < max_{th}$ ($20 \le 50 < 80$):
-   $$
-   p_b = max_p \cdot \frac{avg - min_{th}}{max_{th} - min_{th}} = 0.1 \cdot \frac{50 - 20}{80 - 20} = 0.1 \cdot \frac{30}{60} = 0.05 \quad (5\%)
-   $$
-2. **Tính xác suất thực tế $p_a$ theo biến đếm $count$:**
-   $$
-   p_a = \frac{p_b}{1 - count \cdot p_b} = \frac{0.05}{1 - 15 \cdot 0.05} = \frac{0.05}{1 - 0.75} = \frac{0.05}{0.25} = 0.20 \quad (20\%)
-   $$
-3. **Khi $avg = 85\text{ gói}$:**
-   Vì $avg \ge max_{th}$ ($85 \ge 80$), hàng đợi rơi vào vùng nghẽn nghiêm trọng:
-   $$
-   P = 1.0 \quad (100\%)
-   $$
+1. **Tính xác suất nền tảng $p_b$:**  
+   Vì $min_{th} \le avg < max_{th}$ ($20 \le 50 < 80$):  
+   $p_b = max_p \cdot \frac{avg - min_{th}}{max_{th} - min_{th}} = 0.1 \cdot \frac{50 - 20}{80 - 20} = 0.1 \cdot \frac{30}{60} = 0.05 \quad (5\%)$
+
+2. **Tính xác suất thực tế $p_a$ theo biến đếm $count$:**  
+   $p_a = \frac{p_b}{1 - count \cdot p_b} = \frac{0.05}{1 - 15 \cdot 0.05} = \frac{0.05}{1 - 0.75} = \frac{0.05}{0.25} = 0.20 \quad (20\%)$
+
+3. **Khi $avg = 85\text{ packets}$:**  
+   Vì $avg \ge max_{th}$ ($85 \ge 80$), hàng đợi rơi vào vùng nghẽn nghiêm trọng: $P = 1.0 \quad (100\%)$. 
 
 ---
 
@@ -1789,19 +1731,13 @@ Một cơ chế điều hòa lưu lượng Token Bucket có dung lượng thùng
 2. Tính tổng lượng dữ liệu $S$ (tính bằng Megabytes) truyền được trong đợt bùng nổ đó.
 
 #### Lời giải chi tiết
-1. **Thời gian bùng nổ cực đại $T$:**
-   Áp dụng công thức cân bằng token tiêu thụ và token sinh ra:
-   $$
-   b + r \cdot T = M \cdot T \implies T = \frac{b}{M - r}
-   $$
-   Thay số:
-   $$
-   T = \frac{16\text{ Mbits}}{50\text{ Mbps} - 10\text{ Mbps}} = \frac{16}{40} = 0.4\text{ giây}
-   $$
-2. **Tổng lượng dữ liệu truyền được trong đợt burst ($S$):**
-   $$
-   S = M \cdot T = 50\text{ Mbps} \times 0.4\text{ s} = 20\text{ Megabits} = 2.5\text{ Megabytes}
-   $$
+1. **Thời gian bùng nổ cực đại $T$:**  
+   Áp dụng công thức cân bằng token tiêu thụ và token sinh ra: $b + r \cdot T = M \cdot T \implies T = \frac{b}{M - r}$  
+   Thay số: $T = \frac{16\text{ Mbits}}{50\text{ Mbps} - 10\text{ Mbps}} = \frac{16}{40} = 0.4\text{ s} $
+
+2. **Tổng lượng dữ liệu truyền được trong đợt burst ($S$):**  
+   $S = M \cdot T = 50\text{ Mbps} \times 0.4\text{ s} = 20\text{ Megabits} = 2.5\text{ Megabytes}$
+
    *(Kiểm chứng: $2\text{ MB}$ có sẵn trong thùng $+ (10\text{ Mbps} \times 0.4\text{ s} = 4\text{ Mbits} = 0.5\text{ MB}$ mới sinh) $= 2.5\text{ MB}$).*
 
 ---
@@ -1820,21 +1756,14 @@ Tại thời điểm ban đầu thời gian ảo $V(0) = 0$, cả hai luồng đ
 
 #### Lời giải chi tiết
 Công thức tính thời gian ảo hoàn thành:
+
 $$
 F_i^k = \max(F_i^{k-1}, V(a_i^k)) + \frac{L_i^k}{w_i}
 $$
-1. **Gói $P_{1,1}$ (Luồng 1):**
-   $$
-   F_{1,1} = \max(0, 0) + \frac{100}{1} = 100
-   $$
-2. **Gói $P_{2,1}$ (Luồng 2):**
-   $$
-   F_{2,1} = \max(0, 0) + \frac{200}{4} = 50
-   $$
-3. **Gói $P_{1,2}$ (Luồng 1):**
-   $$
-   F_{1,2} = \max(F_{1,1}, 0) + \frac{100}{1} = 100 + \frac{100}{1} = 200
-   $$
+
+1. **Gói $P_{1,1}$ (Luồng 1):** $F_{1,1} = \max(0, 0) + \frac{100}{1} = 100$
+2. **Gói $P_{2,1}$ (Luồng 2):** $F_{2,1} = \max(0, 0) + \frac{200}{4} = 50$
+3. **Gói $P_{1,2}$ (Luồng 1):** $F_{1,2} = \max(F_{1,1}, 0) + \frac{100}{1} = 100 + \frac{100}{1} = 200$
 
 **Thứ tự phát gói (Ưu tiên gói có $F$ nhỏ nhất trước):**
 1. Gói $P_{2,1}$ phát đầu tiên (vì $F = 50$).
