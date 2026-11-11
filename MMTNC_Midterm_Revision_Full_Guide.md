@@ -257,13 +257,7 @@ Khi phía gửi nhận được đúng **3 Duplicate ACKs**:
 ### 2.7. Băng thông BDP cao & Hạn chế của Loss-based TCP trên mạng LFN
 - Khái niệm **LFN (Long Fat Networks - RFC 7323):** Mạng có tích số Băng thông - Độ trễ rất lớn (High Bandwidth-Delay Product: $BDP = \text{Bandwidth} \times RTT$).  
   *Ví dụ:* Đường truyền $10\text{ Gbps}$ với $RTT = 100\text{ ms} \implies BDP = 10^9\text{ bits} \approx 125\text{ MB}$. Với $MSS = 1500\text{ bytes}$, cần cửa sổ $cwnd \approx 83,333\text{ packets}$.
-**Công thức Throughput Mathis:**
-
-$$
-\text{Throughput} \le \frac{MSS}{RTT} \sqrt{\frac{3}{2p}} \approx \frac{1.22 \cdot MSS}{RTT \cdot \sqrt{p}}
-$$
-
-  *(với $p$ là xác suất mất gói).*
+**Công thức Throughput Mathis:** $\text{Throughput} \le \frac{MSS}{RTT} \sqrt{\frac{3}{2p}} \approx \frac{1.22 \cdot MSS}{RTT \cdot \sqrt{p}}$ *(với $p$ là xác suất mất gói).*
 - **Nghịch lý của Reno trên mạng LFN:**
   - Nếu mất gói một lần, Reno giảm cửa sổ đi 50% ($83,333 / 2 \approx 41,666\text{ packets}$).
   - Với tốc độ tăng tuyến tính $+1\text{ MSS}$ mỗi RTT ($100\text{ ms}$), Reno cần $41,666\text{ RTT} \approx 4,166\text{ s} \approx 70\text{ min}$ chỉ để phục hồi lại mức thông lượng ban đầu!
@@ -294,11 +288,7 @@ Brahma & Keshav đề xuất hướng tiếp cận dựa trên **Độ trễ (De
 CUBIC (Ha, Rhee, Xu - 2008) được thiết kế đặc thù cho mạng tốc độ cao (LFN), thay thế BIC-TCP và trở thành chuẩn mặc định của Linux kernel từ phiên bản 2.6.19 đến nay.
 
 #### Hàm tăng trưởng cửa sổ bậc ba
-Quy mô cửa sổ của CUBIC là một hàm bậc ba theo thời gian thực $t$ (tính bằng giây) kể từ lần giảm cửa sổ gần nhất:
-
-$$
-W_{cubic}(t) = C \cdot (t - K)^3 + W_{max}
-$$
+Quy mô cửa sổ của CUBIC là một hàm bậc ba theo thời gian thực $t$ (tính bằng giây) kể từ lần giảm cửa sổ gần nhất: $W_{cubic}(t) = C \cdot (t - K)^3 + W_{max}$
 
 Trong đó:
 - $W_{max}$: Kích thước cửa sổ ngay trước khi xảy ra sự kiện mất gói gần nhất.
@@ -438,20 +428,12 @@ RED là thuật toán AQM kinh điển và quan trọng nhất, vận hành dự
 ### 3.4. Công thức toán học tính độ dài hàng đợi trung bình và xác suất drop
 
 #### 1. Tính toán độ dài hàng đợi trung bình ($avg$)
-Sử dụng bộ lọc trung bình trượt có trọng số theo hàm mũ (EWMA):
-
-$$
-avg \leftarrow (1 - w_q) \cdot avg + w_q \cdot q
-$$
+Sử dụng bộ lọc trung bình trượt có trọng số theo hàm mũ (EWMA): $avg \leftarrow (1 - w_q) \cdot avg + w_q \cdot q$
 
 - $q$: Độ dài hàng đợi thực tế tức thời tại thời điểm gói tin đến.
 - $w_q$: Trọng số hàng đợi (thường chọn $w_q = 0.002$). Trọng số nhỏ giúp lọc bỏ các đợt bùng nổ lưu lượng tạm thời (transient bursts), ngăn không cho hệ thống phản ứng thái quá.
 
-*Trường hợp hàng đợi rỗng (Queue is Idle):* Nếu router phát hiện hàng đợi bị rỗng trong một khoảng thời gian $idle\_time$, $avg$ được suy giảm nhân theo số lượng gói tin giả định $m$:
-
-$$
-avg \leftarrow avg \cdot (1 - w_q)^m \quad \text{with } m = \frac{\text{idle\_time}}{\text{transmission\_time}}
-$$
+*Trường hợp hàng đợi rỗng (Queue is Idle):* Nếu router phát hiện hàng đợi bị rỗng trong một khoảng thời gian $idle\_time$, $avg$ được suy giảm nhân theo số lượng gói tin giả định $m$: $avg \leftarrow avg \cdot (1 - w_q)^m \quad (\text{với } m = \frac{\text{idle\_time}}{\text{transmission\_time}})$.
 
 #### 2. Tính toán xác suất loại bỏ gói tin ($p_b$ và $p_a$)
 RED thiết lập hai ngưỡng cấu hình:
@@ -519,11 +501,7 @@ Chất lượng dịch vụ (QoS) là tập hợp các công nghệ nhằm phân
 Bốn tham số định lượng cơ bản của mạng IP:
 1. **Băng thông (Bandwidth / Throughput):** Tốc độ truyền tải dữ liệu hữu ích tối đa qua đường truyền, đo bằng bps (bit per second).
 2. **Độ trễ toàn trình (One-Way End-to-End Delay / Latency):**
-Tổng thời gian một gói tin đi từ nguồn tới đích:
-
-$$
-\text{Delay}_{\text{total}} = \text{Delay}_{\text{prop}} + \text{Delay}_{\text{trans}} + \text{Delay}_{\text{proc}} + \text{Delay}_{\text{queue}}
-$$
+Tổng thời gian một gói tin đi từ nguồn tới đích: $\text{Delay}_{\text{total}} = \text{Delay}_{\text{prop}} + \text{Delay}_{\text{trans}} + \text{Delay}_{\text{proc}} + \text{Delay}_{\text{queue}}$
 
    - $\text{Delay}_{\text{prop}} = \frac{d}{s}$: Trễ truyền lan vật lý ($d$ là cự ly cáp, $s \approx 2 \times 10^8\text{ m/s}$ trong sợi quang). Cố định, không thể tối ưu bằng phần mềm.
    - $\text{Delay}_{\text{trans}} = \frac{L}{R}$: Trễ phát tín hiệu ($L$ là kích thước gói, $R$ là tốc độ cổng).
@@ -742,11 +720,7 @@ Trường ToS (Type of Service) trong IPv4 Header hoặc Traffic Class trong IPv
 #### 3. Assured Forwarding (AF PHB - RFC 2597)
 Cung cấp dịch vụ chuyển tiếp có bảo đảm với 4 lớp dịch vụ độc lập (**Class 1 đến Class 4**). Trong mỗi lớp lại phân chia thành 3 mức độ ưu tiên loại bỏ gói (**Drop Precedence 1, 2, 3**: Thấp, Trung bình, Cao).
 
-**Cấu trúc nhị phân của DSCP nhóm AF:**
-
-$$
-[a_1 a_2 a_3] \; [d_1 d_2] \; [0]
-$$
+**Cấu trúc nhị phân của DSCP nhóm AF:** $[a_1 a_2 a_3] \; [d_1 d_2] \; [0]$
 
 - 3 bit đầu $[a_1 a_2 a_3]$ xác định **Lớp dịch vụ (Class 1-4)**:
   - Class 1: `001`
@@ -981,11 +955,7 @@ Khác hoàn toàn với Distance Vector, trong Link-State:
 - **Area 0 (Backbone Area):** Vùng xương sống bắt buộc. Mọi vùng non-backbone (Area 1, Area 2...) đều phải có kết nối vật lý hoặc logic (Virtual Link) trực tiếp vào Area 0.
 - **Router biên vùng (ABR - Area Border Router):** Router có cổng nằm ở ít nhất hai vùng khác nhau (kết nối Area non-backbone vào Area 0).
 - **Router biên AS (ASBR - Autonomous System Boundary Router):** Router kết nối mạng OSPF với một hệ thống định tuyến khác (chạy BGP, RIP, hoặc Static).
-**Công thức tính OSPF Cost chuẩn:**
-
-$$
-\text{Cost} = \frac{\text{Reference Bandwidth}}{\text{Interface Bandwidth}} = \frac{10^8 \text{ bps}}{\text{Interface Bandwidth (bps)}} = \frac{100 \text{ Mbps}}{\text{Interface Bandwidth (Mbps)}}
-$$
+**Công thức tính OSPF Cost chuẩn:** $\text{Cost} = \frac{\text{Reference Bandwidth}}{\text{Interface Bandwidth}} = \frac{10^8 \text{ bps}}{\text{Interface Bandwidth (bps)}} = \frac{100 \text{ Mbps}}{\text{Interface Bandwidth (Mbps)}}$
 
   *(Lưu ý: Mặc định cổng 100 Mbps có Cost = 1, cổng 1 Gbps cũng có Cost = 1. Để phân biệt tốc độ cao, cần cấu hình lệnh: `auto-cost reference-bandwidth 1000` hoặc cao hơn).*
 
@@ -1755,11 +1725,7 @@ Tại thời điểm ban đầu thời gian ảo $V(0) = 0$, cả hai luồng đ
 **Yêu cầu:** Tính thời gian hoàn thành ảo $F$ của từng gói tin và chỉ ra thứ tự các gói tin được router phát đi.
 
 #### Lời giải chi tiết
-Công thức tính thời gian ảo hoàn thành:
-
-$$
-F_i^k = \max(F_i^{k-1}, V(a_i^k)) + \frac{L_i^k}{w_i}
-$$
+Công thức tính thời gian ảo hoàn thành: $F_i^k = \max(F_i^{k-1}, V(a_i^k)) + \frac{L_i^k}{w_i}$
 
 1. **Gói $P_{1,1}$ (Luồng 1):** $F_{1,1} = \max(0, 0) + \frac{100}{1} = 100$
 2. **Gói $P_{2,1}$ (Luồng 2):** $F_{2,1} = \max(0, 0) + \frac{200}{4} = 50$
