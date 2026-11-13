@@ -9,3 +9,4 @@ Tài liệu ôn tập và kiến thức Mật mã học & Truyền dữ liệu /
 - [Cẩm nang toàn diện: Bài 4 - Mã hóa Ứng dụng (Chữ ký số DSA, Bảo mật CSDL bằng CRT, Ngưỡng Shamir)](./Bai_04_Ma_Hoa_Ung_Dung.md)
 - [CSAI Midterm Revision Full Guide](./CSAI_Midterm_Revision_Full_Guide.md)
 - [Cẩm nang toàn diện ôn thi giữa kỳ Mạng máy tính nâng cao (MMTNC Midterm Full Guide)](./MMTNC_Midterm_Revision_Full_Guide.md)
+- [Cẩm nang toàn diện: Hệ điều hành - Quản lý Tiến trình & Điều phối (Process Management & CPU Scheduling Full Guide)](./HDH_Quan_Ly_Tien_Trinh_Full_Guide.md)
