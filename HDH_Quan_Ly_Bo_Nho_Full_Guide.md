@@ -224,33 +224,33 @@ Ban đầu frame tự do là `#0`, trang không bị neo đang nằm trong RAM l
 
 - **a. P2 truy cập địa chỉ `13000` ($p = 3, d = 712$):**
   - Tra bảng trang của P2 tại `page 3`: `Valid = V`, `Frame = #400` $\implies$ **Page Hit**.
-  - Địa chỉ vật lý: $\langle \#400, 712 \rangle = 400 \times 4096 + 712 = 1.639.112$.
+  - Địa chỉ vật lý: `<#400, 712>` $= 400 \times 4096 + 712 = 1.639.112$.
 - **b. P1 truy cập địa chỉ `13000` ($p = 3, d = 712$):**
   - Tra bảng trang của P1 tại `page 3`: `Valid = I` $\implies$ **Page Fault**.
   - Hệ thống còn khung trang tự do `#0`. Nạp `P1.p3` từ đĩa vào frame `#0`.
   - Cập nhật bảng trang P1: `page 3 -> Frame #0, Valid = V`.
-  - Địa chỉ vật lý: $\langle \#0, 712 \rangle = 0 \times 4096 + 712 = 712$.
+  - Địa chỉ vật lý: `<#0, 712>` $= 0 \times 4096 + 712 = 712$.
 - **c. P1 truy cập địa chỉ `16383` ($p = 3, d = 4095$):**
   - Tra bảng trang của P1 tại `page 3`: `Valid = V`, `Frame = #0` $\implies$ **Page Hit**.
-  - Địa chỉ vật lý: $\langle \#0, 4095 \rangle = 0 \times 4096 + 4095 = 4095$.
+  - Địa chỉ vật lý: `<#0, 4095>` $= 0 \times 4096 + 4095 = 4095$.
 - **d. P3 truy cập địa chỉ `4096` ($p = 1, d = 0$):**
   - Tra bảng trang của P3 tại `page 1`: `Valid = I` $\implies$ **Page Fault**.
   - Hết khung trang trống. Trong các trang không bị neo (`P2.p3` dùng lần cuối ở bước a, `P1.p3` dùng lần cuối ở bước c), theo LRU chọn **`P2.p3` (frame `#400`)** làm nạn nhân.
   - Swap out `P2.p3`, cập nhật bảng trang P2 (`page 3 -> Valid = I`).
   - Nạp `P3.p1` vào frame `#400`, cập nhật bảng trang P3 (`page 1 -> Frame #400, Valid = V`).
-  - Địa chỉ vật lý: $\langle \#400, 0 \rangle = 400 \times 4096 + 0 = 1.638.400$.
+  - Địa chỉ vật lý: `<#400, 0>` $= 400 \times 4096 + 0 = 1.638.400$.
 - **e. P3 truy cập địa chỉ `13000` ($p = 3, d = 712$):**
   - Tra bảng trang của P3 tại `page 3`: `Valid = I` $\implies$ **Page Fault**.
   - Hết khung trang trống. Trong các trang không bị neo (`P1.p3` ở bước c, `P3.p1` ở bước d), theo LRU chọn **`P1.p3` (frame `#0`)** làm nạn nhân.
   - Swap out `P1.p3`, cập nhật bảng trang P1 (`page 3 -> Valid = I`).
   - Nạp `P3.p3` vào frame `#0`, cập nhật bảng trang P3 (`page 3 -> Frame #0, Valid = V`).
-  - Địa chỉ vật lý: $\langle \#0, 712 \rangle = 712$.
+  - Địa chỉ vật lý: `<#0, 712>` $= 712$.
 - **f. P2 truy cập địa chỉ `16383` ($p = 3, d = 4095$):**
   - Tra bảng trang của P2 tại `page 3`: `Valid = I` $\implies$ **Page Fault**.
   - Hết khung trang trống. Trong các trang không bị neo (`P3.p1` ở bước d, `P3.p3` ở bước e), theo LRU chọn **`P3.p1` (frame `#400`)** làm nạn nhân.
   - Swap out `P3.p1`, cập nhật bảng trang P3 (`page 1 -> Valid = I`).
   - Nạp `P2.p3` vào frame `#400`, cập nhật bảng trang P2 (`page 3 -> Frame #400, Valid = V`).
-  - Địa chỉ vật lý: $\langle \#400, 4095 \rangle = 400 \times 4096 + 4095 = 1.642.495$.
+  - Địa chỉ vật lý: `<#400, 4095>` $= 400 \times 4096 + 4095 = 1.642.495$.
 
 **Bảng trạng thái bảng trang sau bước f:**
 
@@ -382,3 +382,4 @@ Ban đầu frame tự do là `#0`, trang không bị neo đang nằm trong RAM l
    - **Bước 6 (`P1.p1`):** Ngay sau khi bị đẩy ra ở bước 5, `P1` lại truy xuất địa chỉ `1030` thuộc `P1.p1`! Vì `P1.p1` vừa bị swap out nên xảy ra **lỗi trang thứ 6**. Lúc này trang ít được dùng gần đây nhất là `P1.p2` (từ bước 2) $\implies$ `P1.p2` bị đẩy ra để nạp lại `P1.p1`.
    - **Các bước 7, 8, 9 (`P2.p2`, `P1.p5`, `P2.p0`):** Cả 3 trang này đều đang hiện diện trong RAM (tại Frame 2, Frame 3, Frame 0) $\implies$ đều là **Page Hit**, không phát sinh thêm lỗi trang nào, chỉ cập nhật lại thứ tự sử dụng gần nhất (MRU) trong danh sách LRU.
    - Tổng kết: **6 lỗi trang** trên tổng số 9 lần truy xuất.
+
