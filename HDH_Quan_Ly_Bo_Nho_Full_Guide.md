@@ -324,6 +324,47 @@ Ban đầu frame tự do là `#0`, trang không bị neo đang nằm trong RAM l
 
 ---
 
+#### Bài tập 3
+
+> **Đề bài:** Một hệ thống máy tính sử dụng bộ nhớ ảo với cơ chế cấp phát trang toàn cục. Hệ thống có 3 khung trang, kích thước mỗi trang là 1024 bytes. Hệ thống sử dụng địa chỉ logic 16 bit. Tại thời điểm đang xét, cả 3 khung trang trong bộ nhớ vật lý đều trống và có 3 tiến trình P1, P2, P3 vừa được nạp vào trong hệ thống. Quá trình truy xuất bộ nhớ của 3 tiến trình này lần lượt là: `P1.3144, P2.2098, P3.1025, P1.4095, P2.2047, P3.1024, P3.2048, P1.1023`. Biết rằng chiến lược thay thế trang là LRU.
+> - **a.** Hãy cho biết số bit dùng xác định địa chỉ trang.
+> - **b.** Hãy diễn giải cách thức hệ thống thực hiện tuần tự các truy xuất bộ nhớ đến những địa chỉ trên.
+
+**a. Số bit dùng xác định địa chỉ trang:**
+- Địa chỉ logic có độ dài $m = 16\text{ bit}$.
+- Kích thước mỗi trang $= 1024\text{ bytes} = 2^{10}\text{ bytes} \implies$ số bit dùng cho `offset` ($d$) là $n = 10\text{ bit}$.
+- **Số bit dùng xác định địa chỉ trang (số hiệu trang $p$):** $16 - 10 = 6\text{ bit}$.
+
+**b. Diễn giải cách thức hệ thống thực hiện tuần tự các truy xuất bộ nhớ:**
+Với kích thước trang $1024\text{ bytes}$, tách địa chỉ logic thành cặp $\langle p, d \rangle$ ($p = \lfloor \text{địa chỉ} / 1024 \rfloor$, $d = \text{địa chỉ} \bmod 1024$):
+- Chuỗi truy xuất trang: **`P1.p3, P2.p2, P3.p1, P1.p3, P2.p1, P3.p1, P3.p2, P1.p0`**
+
+Diễn giải từng bước trên 3 khung trang (`Frame 0`, `Frame 1`, `Frame 2`) theo chiến lược **LRU toàn cục**:
+
+1. **`P1.3144` (`P1.p3`, `d = 72`):** `P1.p3` chưa có trong RAM $\implies$ **Lỗi trang (1)**. Cấp `Frame 0` cho `P1.p3`, cập nhật bảng trang P1 (`Page 3 -> Frame 0, V`). Địa chỉ vật lý: `<Frame 0, 72>` $= 72$.
+2. **`P2.2098` (`P2.p2`, `d = 50`):** `P2.p2` chưa có trong RAM $\implies$ **Lỗi trang (2)**. Cấp `Frame 1` cho `P2.p2`, cập nhật bảng trang P2 (`Page 2 -> Frame 1, V`). Địa chỉ vật lý: `<Frame 1, 50>` $= 1074$.
+3. **`P3.1025` (`P3.p1`, `d = 1`):** `P3.p1` chưa có trong RAM $\implies$ **Lỗi trang (3)**. Cấp `Frame 2` cho `P3.p1`, cập nhật bảng trang P3 (`Page 1 -> Frame 2, V`). Địa chỉ vật lý: `<Frame 2, 1>` $= 2049$.
+4. **`P1.4095` (`P1.p3`, `d = 1023`):** `P1.p3` đang có ở `Frame 0` (`Valid = V`) $\implies$ **Page Hit**. Địa chỉ vật lý: `<Frame 0, 1023>` $= 1023$.
+5. **`P2.2047` (`P2.p1`, `d = 1023`):** `P2.p1` chưa có trong RAM, hết frame trống $\implies$ **Lỗi trang (4)**. Theo LRU chọn `P2.p2` (`Frame 1`, dùng lần cuối ở bước 2) làm nạn nhân. Swap out `P2.p2` (cập nhật bảng trang P2: `Page 2 -> I`), nạp `P2.p1` vào `Frame 1` (`Page 1 -> Frame 1, V`). Địa chỉ vật lý: `<Frame 1, 1023>` $= 2047$.
+6. **`P3.1024` (`P3.p1`, `d = 0`):** `P3.p1` đang có ở `Frame 2` (`Valid = V`) $\implies$ **Page Hit**. Địa chỉ vật lý: `<Frame 2, 0>` $= 2048$.
+7. **`P3.2048` (`P3.p2`, `d = 0`):** `P3.p2` chưa có trong RAM, hết frame trống $\implies$ **Lỗi trang (5)**. Theo LRU chọn `P1.p3` (`Frame 0`, dùng lần cuối ở bước 4) làm nạn nhân. Swap out `P1.p3` (cập nhật bảng trang P1: `Page 3 -> I`), nạp `P3.p2` vào `Frame 0` (`Page 2 -> Frame 0, V`). Địa chỉ vật lý: `<Frame 0, 0>` $= 0$.
+8. **`P1.1023` (`P1.p0`, `d = 1023`):** `P1.p0` chưa có trong RAM, hết frame trống $\implies$ **Lỗi trang (6)**. Theo LRU chọn `P2.p1` (`Frame 1`, dùng lần cuối ở bước 5) làm nạn nhân. Swap out `P2.p1` (cập nhật bảng trang P2: `Page 1 -> I`), nạp `P1.p0` vào `Frame 1` (`Page 0 -> Frame 1, V`). Địa chỉ vật lý: `<Frame 1, 1023>` $= 2047$.
+
+| Bước | Truy xuất | Trang (`p, d`) | Trạng thái | Frame 0 | Frame 1 | Frame 2 | Địa chỉ vật lý | Thứ tự LRU $\to$ MRU |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+| 1 | `P1.3144` | `P1.p3`, `72` | **Lỗi trang (1)** | `P1.p3` | - | - | `72` | `P1.p3` |
+| 2 | `P2.2098` | `P2.p2`, `50` | **Lỗi trang (2)** | `P1.p3` | `P2.p2` | - | `1074` | `P1.p3, P2.p2` |
+| 3 | `P3.1025` | `P3.p1`, `1` | **Lỗi trang (3)** | `P1.p3` | `P2.p2` | `P3.p1` | `2049` | `P1.p3, P2.p2, P3.p1` |
+| 4 | `P1.4095` | `P1.p3`, `1023` | Hit | `P1.p3` | `P2.p2` | `P3.p1` | `1023` | `P2.p2, P3.p1, P1.p3` |
+| 5 | `P2.2047` | `P2.p1`, `1023` | **Lỗi trang (4)** *(thay `P2.p2`)* | `P1.p3` | **`P2.p1`** | `P3.p1` | `2047` | `P3.p1, P1.p3, P2.p1` |
+| 6 | `P3.1024` | `P3.p1`, `0` | Hit | `P1.p3` | `P2.p1` | `P3.p1` | `2048` | `P1.p3, P2.p1, P3.p1` |
+| 7 | `P3.2048` | `P3.p2`, `0` | **Lỗi trang (5)** *(thay `P1.p3`)* | **`P3.p2`** | `P2.p1` | `P3.p1` | `0` | `P2.p1, P3.p1, P3.p2` |
+| 8 | `P1.1023` | `P1.p0`, `1023` | **Lỗi trang (6)** *(thay `P2.p1`)* | `P3.p2` | **`P1.p0`** | `P3.p1` | `2047` | `P3.p1, P3.p2, P1.p0` |
+
+- **Tổng kết:** Phát sinh **6 lỗi trang** và **2 Page Hit** trên tổng số 8 truy xuất. Trạng thái cuối cùng: `Frame 0: P3.p2`, `Frame 1: P1.p0`, `Frame 2: P3.p1`.
+
+---
+
 ### Phần 2: Giải thích chi tiết, cụ thể, chính xác lời giải
 
 #### Giải thích chi tiết Bài tập 1
@@ -404,4 +445,39 @@ Ban đầu frame tự do là `#0`, trang không bị neo đang nằm trong RAM l
      - `Frame 2` đang chứa `P2.p2` $\implies$ Bảng trang P2 tại `Page 2` ghi `Frame 2`, `Valid = V`.
      - `Frame 3` đang chứa `P1.p5` $\implies$ Bảng trang P1 tại `Page 5` ghi `Frame 3`, `Valid = V`.
    - **Lưu ý ở `P1.p2`:** Dù `P1.p2` từng được nạp vào `Frame 1` ở bước 2, nhưng đến bước 6 đã bị chọn làm nạn nhân và swap out để nhường `Frame 1` cho `P1.p1`. Do đó, khi kết thúc quá trình, `P1.p2` không còn nằm trong RAM nên `Valid bit` của nó trong bảng trang P1 phải đặt lại là **`I`** (Invalid). Các trang chưa từng được truy xuất còn lại của cả P1 và P2 đều có `Valid bit = I`.
+
+---
+
+#### Giải thích chi tiết Bài tập 3
+
+1. **Cách xác định số bit địa chỉ trang:**
+   - Một địa chỉ logic 16 bit có cấu trúc gồm 2 phần: `[page number (p) | offset (d)]`.
+   - Kích thước trang $1024\text{ bytes} = 2^{10}\text{ bytes}$, nghĩa là để đánh địa chỉ từng byte bên trong 1 trang (từ `0` đến `1023`) cần đúng $10\text{ bit}$ cho phần `offset`.
+   - Phần bit còn lại ở đầu địa chỉ logic dùng để đánh số hiệu trang: $16 - 10 = 6\text{ bit}$. (Với 6 bit, mỗi tiến trình có không gian địa chỉ tối đa $2^6 = 64$ trang).
+
+2. **Cách tách từng địa chỉ logic thành $\langle p, d \rangle$ và tính địa chỉ vật lý:**
+   - Với $\text{page size} = 1024\text{ bytes}$:
+     - Trang 0: `0` $\to$ `1023`
+     - Trang 1: `1024` $\to$ `2047`
+     - Trang 2: `2048` $\to$ `3071`
+     - Trang 3: `3072` $\to$ `4095`
+   - Kiểm tra chi tiết các mốc ranh giới trong đề bài (rất dễ nhầm nếu không chia chính xác):
+     - `P1.3144`: $3144 = 3 \times 1024 + 72 \implies p = 3, d = 72$.
+     - `P2.2098`: $2098 = 2 \times 1024 + 50 \implies p = 2, d = 50$.
+     - `P3.1025`: $1025 = 1 \times 1024 + 1 \implies p = 1, d = 1$.
+     - `P1.4095`: $4095 = 3 \times 1024 + 1023 \implies p = 3, d = 1023$ (byte cuối cùng của trang 3).
+     - `P2.2047`: $2047 = 1 \times 1024 + 1023 \implies p = 1, d = 1023$ (byte cuối cùng của trang 1, **chưa sang trang 2**).
+     - `P3.1024`: $1024 = 1 \times 1024 + 0 \implies p = 1, d = 0$ (byte đầu tiên của trang 1).
+     - `P3.2048`: $2048 = 2 \times 1024 + 0 \implies p = 2, d = 0$ (byte đầu tiên của trang 2).
+     - `P1.1023`: $1023 = 0 \times 1024 + 1023 \implies p = 0, d = 1023$ (byte cuối cùng của trang 0).
+   - Công thức địa chỉ vật lý: $\text{Frame} \times 1024 + d$.
+
+3. **Theo dõi cơ chế LRU toàn cục (Global LRU) trên 3 khung trang:**
+   - Vì hệ thống dùng **cấp phát trang toàn cục**, cả 3 tiến trình `P1, P2, P3` dùng chung 3 khung trang vật lý (`Frame 0, 1, 2`) và khi hết khung trống, một tiến trình có thể thay thế khung trang đang thuộc về tiến trình khác.
+   - **Bước 1–3:** 3 khung trang đều trống nên 3 trang đầu tiên (`P1.p3`, `P2.p2`, `P3.p1`) lần lượt được nạp vào `Frame 0, 1, 2` (3 lỗi trang).
+   - **Bước 4 (`P1.4095` $\to$ `P1.p3`):** `P1.p3` đang nằm ở `Frame 0` nên xảy ra **Page Hit**. Điểm quan trọng của LRU là **Page Hit cũng phải cập nhật mốc thời gian sử dụng gần nhất** cho `P1.p3` ($t=4$). Nhờ lần truy xuất này, `P1.p3` không bị đẩy ra ở bước 5!
+   - **Bước 5 (`P2.2047` $\to$ `P2.p1`):** Lỗi trang thứ 4. So sánh thời điểm dùng gần nhất của 3 trang trong RAM: `P2.p2` ($t=2$), `P3.p1` ($t=3$), `P1.p3` ($t=4$) $\implies$ `P2.p2` cũ nhất nên bị swap out khỏi `Frame 1` để nhường chỗ cho `P2.p1`.
+   - **Bước 6 (`P3.1024` $\to$ `P3.p1`):** `P3.p1` vẫn còn ở `Frame 2` $\implies$ **Page Hit**, cập nhật mốc dùng gần nhất cho `P3.p1` lên $t=6$.
+   - **Bước 7 (`P3.2048` $\to$ `P3.p2`):** Lỗi trang thứ 5. So sánh 3 trang hiện tại: `P1.p3` ($t=4$), `P2.p1` ($t=5$), `P3.p1` ($t=6$) $\implies$ `P1.p3` cũ nhất nên bị swap out khỏi `Frame 0` để nạp `P3.p2`.
+   - **Bước 8 (`P1.1023` $\to$ `P1.p0`):** Lỗi trang thứ 6. So sánh 3 trang hiện tại: `P2.p1` ($t=5$), `P3.p1` ($t=6$), `P3.p2` ($t=7$) $\implies$ `P2.p1` cũ nhất nên bị swap out khỏi `Frame 1` để nạp `P1.p0`.
 
