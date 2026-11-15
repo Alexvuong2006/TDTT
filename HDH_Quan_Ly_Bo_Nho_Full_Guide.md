@@ -309,6 +309,19 @@ Ban đầu frame tự do là `#0`, trang không bị neo đang nằm trong RAM l
 
 - **Tổng số lỗi trang:** **6 lỗi trang**.
 
+- **c. Bảng trang của P1 và P2 sau khi kết thúc:**
+
+| Page | P1 (Frame / Valid) | P2 (Frame / Valid) |
+| :---: | :---: | :---: |
+| **0** | `I` | `Frame 0` / `V` |
+| **1** | `Frame 1` / `V` | `I` |
+| **2** | `I` | `Frame 2` / `V` |
+| **3** | `I` | `I` |
+| **4** | `I` | `I` |
+| **5** | `Frame 3` / `V` | `I` |
+| **6** | `I` | `I` |
+| **7** | `I` | `I` |
+
 ---
 
 ### Phần 2: Giải thích chi tiết, cụ thể, chính xác lời giải
@@ -382,4 +395,13 @@ Ban đầu frame tự do là `#0`, trang không bị neo đang nằm trong RAM l
    - **Bước 6 (`P1.p1`):** Ngay sau khi bị đẩy ra ở bước 5, `P1` lại truy xuất địa chỉ `1030` thuộc `P1.p1`! Vì `P1.p1` vừa bị swap out nên xảy ra **lỗi trang thứ 6**. Lúc này trang ít được dùng gần đây nhất là `P1.p2` (từ bước 2) $\implies$ `P1.p2` bị đẩy ra để nạp lại `P1.p1`.
    - **Các bước 7, 8, 9 (`P2.p2`, `P1.p5`, `P2.p0`):** Cả 3 trang này đều đang hiện diện trong RAM (tại Frame 2, Frame 3, Frame 0) $\implies$ đều là **Page Hit**, không phát sinh thêm lỗi trang nào, chỉ cập nhật lại thứ tự sử dụng gần nhất (MRU) trong danh sách LRU.
    - Tổng kết: **6 lỗi trang** trên tổng số 9 lần truy xuất.
+
+4. **Cách lập bảng trang của P1 và P2 sau khi kết thúc:**
+   - Từ câu 2, mỗi tiến trình có tối đa **8 trang ảo** (đánh số từ `Page 0` đến `Page 7`), nên bảng trang của mỗi tiến trình có **8 phần tử (entry)**.
+   - Quan sát trạng thái RAM sau bước 9:
+     - `Frame 0` đang chứa `P2.p0` $\implies$ Bảng trang P2 tại `Page 0` ghi `Frame 0`, `Valid = V`.
+     - `Frame 1` đang chứa `P1.p1` $\implies$ Bảng trang P1 tại `Page 1` ghi `Frame 1`, `Valid = V`.
+     - `Frame 2` đang chứa `P2.p2` $\implies$ Bảng trang P2 tại `Page 2` ghi `Frame 2`, `Valid = V`.
+     - `Frame 3` đang chứa `P1.p5` $\implies$ Bảng trang P1 tại `Page 5` ghi `Frame 3`, `Valid = V`.
+   - **Lưu ý ở `P1.p2`:** Dù `P1.p2` từng được nạp vào `Frame 1` ở bước 2, nhưng đến bước 6 đã bị chọn làm nạn nhân và swap out để nhường `Frame 1` cho `P1.p1`. Do đó, khi kết thúc quá trình, `P1.p2` không còn nằm trong RAM nên `Valid bit` của nó trong bảng trang P1 phải đặt lại là **`I`** (Invalid). Các trang chưa từng được truy xuất còn lại của cả P1 và P2 đều có `Valid bit = I`.
 
