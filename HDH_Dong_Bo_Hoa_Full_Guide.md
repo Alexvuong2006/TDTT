@@ -15,6 +15,7 @@
 - [Phần II: Giải bài tập Đồng bộ hóa](#phần-ii-giải-bài-tập-đồng-bộ-hóa)
   - [Bài tập 1: Bài toán Tạo phân tử $H_2O$](#bài-tập-1-bài-toán-tạo-phân-tử-h_2o)
   - [Bài tập 2: Bài toán Hãng sản xuất xe ôtô](#bài-tập-2-bài-toán-hãng-sản-xuất-xe-ôtô)
+  - [Bài tập 3: Quy trình thu mua mía của nhà máy mía đường](#bài-tập-3-quy-trình-thu-mua-mía-của-nhà-máy-mía-đường)
 
 ---
 
@@ -383,3 +384,127 @@ Assemble() // Gắn 4 bánh xe vào khung xe
    4. `Assemble()` chạy `Down(chassis)` (`1 -> 0`), sau đó chờ đủ 4 lần `Up(tire)` từ `MakeTire()`.
    5. Khi đã qua đủ 4 lệnh `Down(tire)`, `Assemble()` thực thi `Put_4_tires_to_chassis()`.
    6. Cuối cùng `Assemble()` gọi `Up(empty_chassis)` (`-1 -> 0`), đánh thức `MakeChassis()` lần 2 để bắt đầu sản xuất khung xe mới.
+
+---
+
+## Bài tập 3: Quy trình thu mua mía của nhà máy mía đường
+
+### Đề bài
+Quy trình thu mua mía của 1 nhà máy mía đường diễn ra theo thứ tự:
+1. Xe tải chở mía đến **Trạm cân vào** để đo trọng lượng cả mía lẫn xe.
+2. Xe di chuyển đến **Trạm Labo** để lấy mẫu thử đo độ đường.
+3. Xe đổ mía xuống tại **Trạm sơ chế** (chỉ xử lý một lượt cho lượng mía của 5 xe mía cùng lúc).
+4. Xe di chuyển đến **Trạm cân ra** để đo trọng lượng xe không (từ đó tính trọng lượng mía).
+5. Xe ra khỏi nhà máy, cung cấp cho **Phòng thu mua** phiếu cân vào, phiếu cân ra và phiếu đo độ đường để tính tiền mía phải trả cho nông dân.
+
+Quy trình được mô hình hóa bằng 5 function: `Trạm_cân_vào()`, `Trạm_Labo()`, `Trạm_sơ_chế()`, `Trạm_cân_ra()`, `Phòng_thu_mua()`.
+
+**Yêu cầu:** Chỉ sử dụng **semaphore** (không sử dụng thêm gì khác), sửa lại 5 function trên sao cho:
+- Bất chấp kết quả điều phối, việc thực thi các function phải thỏa mãn quy trình hoạt động của nhà máy và trật tự xử lý của từng bộ phận.
+- Trạm sơ chế chỉ xử lý một lượt cho lượng mía của 5 xe mía cùng 1 lúc.
+- Tính từ thời điểm cân vào đến thời điểm cân ra, chỉ cho phép có **tối đa 10 xe tải** được phép ở bên trong khu vực nhà máy.
+
+---
+
+### 1. Lời giải chuẩn
+
+```c
+// Khai báo và khởi tạo các Semaphore dùng chung
+Semaphore cho_trong = 10;      // Số chỗ trống tối đa bên trong khu vực nhà máy (tối đa 10 xe)
+Semaphore da_can_vao = 0;      // Số xe đã hoàn tất cân vào, chờ vào Trạm Labo
+Semaphore da_do_duong = 0;     // Số xe đã đo độ đường xong, chờ vào Trạm sơ chế
+Semaphore da_so_che = 0;       // Số xe đã đổ mía sơ chế xong, chờ ra Trạm cân ra
+Semaphore da_can_ra = 0;       // Số xe đã cân ra xong (đủ 3 phiếu), chờ Phòng thu mua tính tiền
+
+Semaphore mutex_can_vao = 1;   // Đảm bảo Trạm cân vào xử lý lần lượt từng xe
+Semaphore mutex_labo = 1;      // Đảm bảo Trạm Labo xử lý lần lượt từng xe
+Semaphore mutex_so_che = 1;    // Đảm bảo Trạm sơ chế gom đủ 5 xe mỗi lượt, tránh tranh chấp
+Semaphore mutex_can_ra = 1;    // Đảm bảo Trạm cân ra xử lý lần lượt từng xe
+Semaphore mutex_thu_mua = 1;   // Đảm bảo Phòng thu mua xử lý lần lượt từng xe
+
+Trạm_cân_vào() // Xử lý cho lần lượt từng xe chở mía vào
+{
+    Down(cho_trong);
+    Down(mutex_can_vao);
+    Đo_trọng_lượng_xe_và_mía();
+    Up(mutex_can_vao);
+    Up(da_can_vao);
+}
+
+Trạm_Labo() // Đo độ đường trong mẫu mía của từng xe
+{
+    Down(da_can_vao);
+    Down(mutex_labo);
+    Lấy_mẫu_mía_để_đo_độ_đường();
+    Up(mutex_labo);
+    Up(da_do_duong);
+}
+
+Trạm_sơ_chế() // Sơ chế khi có đủ 5 xe mía
+{
+    Down(mutex_so_che);
+    Down(da_do_duong);
+    Down(da_do_duong);
+    Down(da_do_duong);
+    Down(da_do_duong);
+    Down(da_do_duong);
+
+    Chuyển_mía_đi_sơ_chế();
+
+    Up(da_so_che);
+    Up(da_so_che);
+    Up(da_so_che);
+    Up(da_so_che);
+    Up(da_so_che);
+    Up(mutex_so_che);
+}
+
+Trạm_cân_ra() // Xử lý cho lần lượt từng xe ra
+{
+    Down(da_so_che);
+    Down(mutex_can_ra);
+    Đo_trọng_lượng_xe();
+    Up(mutex_can_ra);
+    Up(cho_trong);
+    Up(da_can_ra);
+}
+
+Phòng_thu_mua()
+{
+    Down(da_can_ra);
+    Down(mutex_thu_mua);
+    Tính_tiền_mía_phải_trả();
+    Up(mutex_thu_mua);
+}
+```
+
+---
+
+### 2. Giải thích chi tiết
+
+1. **Ý nghĩa các Semaphore sử dụng:**
+   - **Nhóm semaphore phối hợp theo dây chuyền (Rendez-vous):**
+     - `da_can_vao = 0`, `da_do_duong = 0`, `da_so_che = 0`, `da_can_ra = 0`: Đóng vai trò "tín hiệu chuyển trạm" theo đúng thứ tự:
+       $$\text{Trạm cân vào} \xrightarrow{\text{da\_can\_vao}} \text{Trạm Labo} \xrightarrow{\text{da\_do\_duong}} \text{Trạm sơ chế} \xrightarrow{\text{da\_so\_che}} \text{Trạm cân ra} \xrightarrow{\text{da\_can\_ra}} \text{Phòng thu mua}$$
+     - Ban đầu chưa có xe nào đi qua các trạm nên tất cả đều khởi tạo bằng `0`.
+   - **Semaphore giới hạn sức chứa nhà máy:**
+     - `cho_trong = 10`: Theo đề bài, tính từ thời điểm cân vào đến thời điểm cân ra, bên trong khu vực nhà máy chỉ được chứa tối đa **10 xe**.
+     - Trước khi xe thực hiện `Đo_trọng_lượng_xe_và_mía()`, phải gọi `Down(cho_trong)` để chiếm 1 chỗ.
+     - Chỉ sau khi xe hoàn tất `Đo_trọng_lượng_xe()` tại `Trạm_cân_ra()` (tức chuẩn bị rời khỏi khu vực nhà máy), mới gọi `Up(cho_trong)` để nhường chỗ cho xe mới vào.
+   - **Nhóm semaphore độc quyền truy xuất (Mutual Exclusion):**
+     - `mutex_can_vao = 1`, `mutex_can_ra = 1`: Đảm bảo đúng mô tả *"xử lý cho lần lượt từng xe"* tại trạm cân vào và trạm cân ra (không có 2 xe cân cùng lúc).
+     - `mutex_labo = 1`, `mutex_thu_mua = 1`: Đảm bảo tính tuần tự khi có nhiều tiến trình cùng gọi `Trạm_Labo()` hoặc `Phòng_thu_mua()`.
+     - `mutex_so_che = 1`: Đảm bảo tại một thời điểm chỉ có 1 tiến trình `Trạm_sơ_chế()` gom đủ 5 xe, tránh tình trạng nhiều tiến trình `Trạm_sơ_chế()` tranh nhau lấy lẻ (ví dụ tiến trình A lấy 3 xe, tiến trình B lấy 2 xe rồi cả hai cùng bị block gây **Deadlock**).
+
+2. **Giải thích cơ chế gom 5 xe tại `Trạm_sơ_chế()`:**
+   - Đề bài yêu cầu *chỉ sử dụng semaphore (không sử dụng thêm biến đếm hay cấu trúc khác)* và *xử lý một lượt cho lượng mía của 5 xe mía cùng 1 lúc*.
+   - Vì vậy, `Trạm_sơ_chế()` thực hiện gọi `Down(da_do_duong)` **5 lần liên tiếp**. Tiến trình sẽ phải chờ cho đến khi có đủ 5 xe hoàn thành ở `Trạm_Labo()` (tức 5 lần `Up(da_do_duong)`).
+   - Khi đã gom đủ 5 xe, trạm mới thực thi `Chuyển_mía_đi_sơ_chế();`.
+   - Sau khi đổ mía và sơ chế xong cho mẻ 5 xe đó, trạm gọi `Up(da_so_che)` **5 lần liên tiếp** để giải phóng cả 5 xe di chuyển sang `Trạm_cân_ra()`.
+
+3. **Kiểm chứng không xảy ra Deadlock:**
+   - **Sức chứa nhà máy ($10$) và kích thước mẻ sơ chế ($5$):** Vì sức chứa tối đa của nhà máy là $10 \ge 5$, ngay cả khi 10 xe vào đầy nhà máy (`cho_trong = 0`), toàn bộ 10 xe này đều đi qua được `Trạm_Labo()` để tạo ra `da_do_duong = 10`. Lượng xe này đủ để `Trạm_sơ_chế()` xử lý thành công (thậm chí đủ 2 mẻ 5 xe) và đẩy sang `Trạm_cân_ra()`, từ đó gọi `Up(cho_trong)` giải phóng chỗ trong nhà máy. Do đó không bao giờ xảy ra bế tắc do thiếu xe vào mẻ.
+   - **Thứ tự `Down` trong `Trạm_cân_vào()`:** `Down(cho_trong)` được đặt **trước** `Down(mutex_can_vao)`. Nếu đặt ngược lại, khi nhà máy đã đủ 10 xe (`cho_trong == 0`), xe thứ 11 sẽ giữ `mutex_can_vao` trong khi chờ `cho_trong`; tuy không khóa `Trạm_cân_ra()` nhưng làm trạm cân vào bị giữ khóa không cần thiết. Đặt `Down(cho_trong)` ở ngoài là đúng chuẩn *Producer – Consumer*.
+   - **Điều kiện tính tiền ở `Phòng_thu_mua()`:** `Up(da_can_ra)` chỉ được gọi sau khi xe đã đi qua tuần tự `Trạm_cân_vào()` (có phiếu cân vào) $\rightarrow$ `Trạm_Labo()` (có phiếu đo độ đường) $\rightarrow$ `Trạm_sơ_chế()` $\rightarrow$ `Trạm_cân_ra()` (có phiếu cân ra). Do đó, khi `Phòng_thu_mua()` vượt qua `Down(da_can_ra)`, chắc chắn xe đã có đầy đủ 3 loại phiếu hợp lệ để `Tính_tiền_mía_phải_trả()`.
+
+
