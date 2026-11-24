@@ -26,13 +26,14 @@
 
 # PHẦN 1: CHUẨN BỊ VỀ MẶT HẠ TẦNG (VẬT LÝ, MÔI TRƯỜNG, FILE & VIDEO DEMO)
 
-Mục tiêu của Phần 1 là đảm bảo **tuyệt đối không xảy ra sự cố kỹ thuật** (lỗi đường dẫn, lỗi trình biên dịch, lúng túng mở file, quay video bị lỗi/quá giờ) trong lúc quay video và trong buổi vấn đáp trực tiếp.
+Mục tiêu của Phần 1 là đảm bảo **tuyệt đối không xảy ra sự cố kỹ thuật** (lỗi đường dẫn, lỗi trình biên dịch, lúng túng mở file, quay video bị lỗi hoặc quá giờ) trong lúc quay video và trong buổi vấn đáp trực tiếp.
 
 ---
 
 ## 1.1. Chuẩn bị môi trường & Source code bài nộp từ Moodle (Lưu ý 1)
 
 ### A. Kiểm tra hiện trạng máy tính (Checklist trước buổi vấn đáp 1 ngày)
+
 1. **Trình biên dịch C++ (`g++`):**
    - Máy đã cài sẵn `g++ 15.2.0` (MSYS2 UCRT64) trong `PATH`.
    - Mở PowerShell kiểm tra lại bằng lệnh:
@@ -57,6 +58,7 @@ Mục tiêu của Phần 1 là đảm bảo **tuyệt đối không xảy ra s�
      ```
 
 ### B. Cạm bẫy chết người trên Windows — BẮT BUỘC TRÁNH
+
 > ⚠️ **CẢNH BÁO ĐỎ:** Khi biên dịch với MinGW `g++` trên Windows, nếu đường dẫn đầu ra có **chữ tiếng Việt có dấu** (ví dụ `D:\Nhập môn Crypto\...`), trình liên kết `ld.exe` có thể báo lỗi `cannot open output file ...: Invalid argument`.
 >
 > **Cách phòng tránh 100%:**
@@ -64,6 +66,7 @@ Mục tiêu của Phần 1 là đảm bảo **tuyệt đối không xảy ra s�
 > 2. Luôn `cd` vào thẳng bên trong thư mục `project_01_source` rồi mới gõ lệnh `g++ -o dh.exe main.cpp` (dùng tên file tương đối `dh.exe`, không truyền đường dẫn tuyệt đối có dấu).
 
 ### C. Bố trí màn hình & Công cụ trước giờ vấn đáp 15 phút
+
 1. **Đăng nhập sẵn Moodle** trên trình duyệt (mở sẵn đúng tab trang nộp Đồ án 1 để nếu thầy yêu cầu tải lại trước mặt thầy thì bấm tải ngay, không mất công nhập mật khẩu/2FA).
 2. **Giải nén sẵn 1 bản đã tải trực tiếp từ Moodle** tại `C:\demo_dh\24120070-24120089-24120091\`.
 3. **Mở sẵn VS Code** tại thư mục `C:\demo_dh\24120070-24120089-24120091\project_01_source`:
@@ -80,6 +83,7 @@ Mục tiêu của Phần 1 là đảm bảo **tuyệt đối không xảy ra s�
 ## 1.2. Kịch bản quay Video Demo 1–2 phút chi tiết từng giây (Lưu ý 2)
 
 ### A. Chuẩn bị kỹ thuật quay video
+
 - **Phần mềm quay khuyến nghị:**
   - **Cách 1 (Nhanh nhất, có sẵn trên Windows 11):** Nhấn `Win + Shift + R` (Snipping Tool Record) → chọn quay toàn màn hình (Full Screen).
   - **Cách 2 (Chất lượng sắc nét nhất):** Dùng **OBS Studio** (Display Capture, 1920×1080, 30 fps, định dạng `.mp4`).
@@ -103,6 +107,7 @@ Mục tiêu của Phần 1 là đảm bảo **tuyệt đối không xảy ra s�
 | **1:25 – 1:40** | *(Tùy chọn, nếu vẫn dưới 1:45)* Chạy với `--seed` cố định:<br>`.\dh.exe --bits 512 --seed 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef` | Chứng minh chế độ tái lập kết quả để debug/kiểm thử hoạt động trơn tru. Sau đó dừng quay. |
 
 ### C. Checklist kiểm duyệt video trước khi lưu
+
 - [ ] Video dài trong khoảng `1:10` – `1:55` (tuyệt đối không quá 2:00).
 - [ ] Mở đầu có cảnh tải trực tiếp từ Moodle rõ ràng.
 - [ ] Chữ trong Terminal đọc rõ nét, không bị mờ/nhỏ.
@@ -114,7 +119,8 @@ Mục tiêu của Phần 1 là đảm bảo **tuyệt đối không xảy ra s�
 
 ## 1.3. Bộ lệnh Demo "Bất bại" & Phương án dự phòng (Plan B)
 
-### Bộ lệnh copy-paste sẵn cho buổi vấn đáp trực tiếp:
+### Bộ lệnh copy-paste sẵn cho buổi vấn đáp trực tiếp
+
 ```powershell
 # 1. Kiểm tra file trong thư mục source (chỉ có 6 file .cpp)
 ls
@@ -141,9 +147,10 @@ g++ -std=c++14 -O2 -Wall -Wextra -Wpedantic -o dh.exe main.cpp
 .\dh.exe --rounds 5000    # Báo lỗi vượt khoảng [1, 1000]
 ```
 
-### Phương án dự phòng (Plan B) nếu có sự cố:
+### Phương án dự phòng (Plan B) nếu có sự cố
+
 - **Moodle bị chậm/không truy cập được lúc vấn đáp:** Dùng ngay file `24120070-24120089-24120091.zip` đã tải sẵn từ trước đó (để trong `Downloads`), đồng thời có sẵn video quay bước tải từ Moodle làm bằng chứng.
-- **Lỡ chạy `--bits 1024` đúng lượt gặp ứng viên lâu (>10s):** Bình tĩnh giải thích cho thầy: *"Vì sinh số nguyên tố là quá trình ngẫu nhiên (phân bố hình học), thời gian mỗi lần dao động từ 0.4s đến ~12s, trung bình ~4.5s theo benchmark của nhóm"*. Nếu cần nhanh ngay lập tức, có thể bấm `Ctrl + C` và chạy lại hoặc chạy với `--seed` đã test sẵn ra nhanh!
+- **Lỡ chạy `--bits 1024` đúng lượt gặp ứng viên lâu (> 10s):** Bình tĩnh giải thích cho thầy: *"Vì sinh số nguyên tố là quá trình ngẫu nhiên (phân bố hình học), thời gian mỗi lần dao động từ 0.4s đến ~12s, trung bình ~4.5s theo benchmark của nhóm"*. Nếu cần nhanh ngay lập tức, có thể bấm `Ctrl + C` và chạy lại hoặc chạy với `--seed` đã test sẵn ra nhanh!
 - **Thầy muốn kiểm tra thêm unit test / benchmark (nếu có hỏi):** Bộ test đầy đủ nằm ở repo gốc `D:\Nhập môn Crypto\GitHub\tests\` (`test_bigint.cpp`, `test_prng_prime.cpp`, `test_dh.cpp`, `bench_safe_prime.cpp`, `crosscheck_div_stress.py`, `crosscheck_modexp.py`). Nhớ nhấn mạnh với thầy: *các file test này không nộp vào `.zip` để tuân thủ đúng quy định `project_01_source/*.cpp`.*
 
 ---
@@ -157,6 +164,7 @@ Phần này hệ thống lại **toàn bộ kiến trúc, cơ sở toán học, 
 ## 2.1. Tổng quan Kiến trúc Hệ thống & Mô hình Unity Build
 
 ### Kiến thức cốt lõi
+
 1. **Quy định bài nộp (`Lab01.pdf`):**
    - Ngôn ngữ: C/C++ chuẩn **C++14 trở xuống** (`-std=c++14`), chỉ dùng C++ Standard Library + mã nguồn PRNG tham khảo.
    - Cấu trúc: `project_01_source/*.cpp` — **chỉ chứa file `.cpp`**, không `.h`, không `.c`, không `Makefile`.
@@ -209,6 +217,7 @@ Phần này hệ thống lại **toàn bộ kiến trúc, cơ sở toán học, 
 ### A. Giải thích chi tiết từng khối / từng dòng code
 
 #### 1. Kiểu 128-bit & Cấu trúc `uint_t<N>` (Dòng 21–33 & 177–185)
+
 ```cpp
 21: __extension__ typedef unsigned __int128 uint128_t;
 23: template <size_t N> // N limb 64-bit
@@ -222,15 +231,21 @@ Phần này hệ thống lại **toàn bộ kiến trúc, cơ sở toán học, 
 184: const size_t BIG_LIMBS = 2 * MAX_PRIME_BITS / 64; // = 32 limbs = 2048 bit
 185: typedef uint_t<BIG_LIMBS> big_t;
 ```
+
 - **Dòng 21 (`__extension__`):** Khi bật cờ `-Wpedantic`, GCC sẽ cảnh báo ISO C++ không có kiểu `__int128`. Từ khóa `__extension__` bảo trình biên dịch đây là chủ ý để biên dịch sạch 0 warning.
 - **Dòng 23–26 (`template <size_t N>`):** Dùng mảng tĩnh `uint64_t digits[N]` biểu diễn số nguyên không âm theo **Little-Endian theo cấp limb**:
-  $$A = \sum_{i=0}^{N-1} \text{digits}[i] \cdot 2^{64i}$$
-  - `digits[0]` chứa 64 bit thấp nhất ($2^0 \dots 2^{63}$), `digits[N-1]` chứa 64 bit cao nhất.
-  - **Lợi ích cấp phát tĩnh trên Stack:** Không có `new`/`malloc` hay `std::vector`, triệt tiêu overhead cấp phát động trên Heap trong hàng nghìn vòng lặp Miller-Rabin và tận dụng tối đa CPU L1/L2 Cache.
+
+$$
+A = \sum_{i=0}^{N-1} d_i \cdot 2^{64i}
+$$
+
+- Trong đó `d_i` chính là `digits[i]`: `digits[0]` chứa 64 bit thấp nhất (từ $2^0$ đến $2^{63}$), `digits[N-1]` chứa 64 bit cao nhất.
+- **Lợi ích cấp phát tĩnh trên Stack:** Không có `new`/`malloc` hay `std::vector`, triệt tiêu overhead cấp phát động trên Heap trong hàng nghìn vòng lặp Miller-Rabin và tận dụng tối đa CPU L1/L2 Cache.
 - **Dòng 29–33 (Constructor mặc định):** Luôn khởi tạo toàn bộ `N` limb về `0` để không bao giờ chứa giá trị rác từ stack.
-- **Dòng 183–185 (Quy tắc gấp đôi độ rộng):** Khi tính `(a * b) % p` với $a, b < p$ và $p \le 2^{\text{MAX\_PRIME\_BITS}}$, tích trung gian $a \times b$ có độ dài tối đa là $2 \times \text{MAX\_PRIME\_BITS}$. Với `MAX_PRIME_BITS = 1024`, ta cần `BIG_LIMBS = 2048 / 64 = 32` limbs (`big_t` rộng 2048 bit), đảm bảo tích `a * b` **không bao giờ bị tràn**.
+- **Dòng 183–185 (Quy tắc gấp đôi độ rộng):** Khi tính `(a * b) % p` với $a, b \lt p$ và $p \le 2^{B}$ (với `B = MAX_PRIME_BITS`), tích trung gian $a \times b$ có độ dài tối đa là `2B` bit. Với `MAX_PRIME_BITS = 1024`, ta cần `BIG_LIMBS = 2048 / 64 = 32` limbs (`big_t` rộng 2048 bit), đảm bảo tích `a * b` **không bao giờ bị tràn**.
 
 #### 2. Khởi tạo & Chuyển đổi chuỗi I/O (Dòng 36–128)
+
 - **`from_u64(uint64_t v)` (Dòng 36–41):** Tạo `uint_t r` (đã zero-init), gán `r.digits[0] = v`, trả về `r`.
 - **`from_hex(const std::string &s)` (Dòng 44–80):**
   - Dòng 48–50: Tự động bỏ qua tiền tố `"0x"` hoặc `"0X"` nếu có.
@@ -246,23 +261,30 @@ Phần này hệ thống lại **toàn bộ kiến trúc, cơ sở toán học, 
   - Dòng 119–125: Mỗi lần chia lấy ra **đúng 18 chữ số thập phân** (`%018llu` cho các khối ở sau, `%llu` cho khối cao nhất khi `tmp.is_zero()`), nối vào đầu chuỗi `s`. Giảm số vòng chia tới **18 lần**!
 
 #### 3. Các hàm tiện ích & Thao tác bit (Dòng 130–174)
-- **`is_zero()` (Dòng 130–136):** Duyệt `0..N-1`, hễ gặp limb $\ne 0$ trả về `false`. Độ phức tạp $O(N)$.
-- **`is_odd()` (Dòng 138):** `(digits[0] & 1) != 0`. Chỉ kiểm tra bit 0 của limb thấp nhất, $O(1)$.
+
+- **`is_zero()` (Dòng 130–136):** Duyệt `0..N-1`, hễ gặp limb ≠ 0 trả về `false`. Độ phức tạp `O(N)`.
+- **`is_odd()` (Dòng 138):** `(digits[0] & 1) != 0`. Chỉ kiểm tra bit 0 của limb thấp nhất, `O(1)`.
 - **`bit_length()` (Dòng 141–158):**
   - Tìm `top` là limb cao nhất khác 0. Nếu `top < 0` trả về `0`.
   - Dùng `__builtin_clzll(digits[top])` (Count Leading Zeros — dịch ra 1 lệnh CPU `BSR`/`LZCNT` trên x86_64):
-    $$\text{bit\_length} = \text{top} \times 64 + (64 - \text{clzll}(\text{digits}[\text{top}]))$$
+
+$$
+L = \text{top} \times 64 + \bigl(64 - \text{clzll}(d_{\text{top}})\bigr)
+$$
+
   - Lưu ý quan trọng: `__builtin_clzll(0)` là Undefined Behavior, nhưng ở dòng 147 ta đã chắc chắn `digits[top] != 0` trước khi gọi!
 - **`test_bit(i)` & `set_bit(i)` (Dòng 160–174):**
   - Vị trí limb: `limb = i / 64`; vị trí bit trong limb: `bit = i % 64`.
   - Kiểm tra `limb < N` để tránh truy cập ngoài mảng. Dùng hằng `1ULL` (unsigned 64-bit) chứ **tuyệt đối không dùng `1`** (vì `1 << 31` trở lên trên `int` 32-bit là Undefined Behavior!).
 
 #### 4. Toán tử so sánh (Dòng 188–217)
+
 - `operator==`: So từng limb từ `0` đến `N-1`.
 - `operator<`: **Phải duyệt từ limb cao nhất `N-1` xuống `0`** (trọng số lớn quyết định trước!). Gặp cặp `a[i] != b[i]` đầu tiên là quyết định ngay `true`/`false`. Nếu hết vòng lặp đều bằng nhau thì trả về `false`.
 - `!=`, `>`, `<=`, `>=`: Suy diễn 1 dòng từ `==` và `<` để đảm bảo tính nhất quán tuyệt đối (không thể xảy ra bug mâu thuẫn giữa `<` và `>=`).
 
 #### 5. Phép cộng & Phép trừ (Dòng 221–252)
+
 - **`operator+` (Dòng 222–232) — Ripple-carry Addition:**
   ```cpp
   uint128_t carry = 0;
@@ -274,7 +296,7 @@ Phần này hệ thống lại **toàn bộ kiến trúc, cơ sở toán học, 
   ```
   - Ép `a.digits[i]` sang `uint128_t` giúp toàn bộ tổng nằm trong 128 bit (giá trị tối đa $(2^{64}-1) + (2^{64}-1) + 1 = 2^{65} - 1$, chiếm 65 bit).
   - 64 bit thấp ghi vào `res.digits[i]`, bit thứ 64 (`sum >> 64`, chỉ nhận 0 hoặc 1) thành `carry` cho limb kế tiếp.
-- **`operator-` (Dòng 236–252) — Trừ có mượn (giả định $a \ge b$):**
+- **`operator-` (Dòng 236–252) — Trừ có mượn (giả định `a >= b`):**
   ```cpp
   uint128_t sub = static_cast<uint128_t>(b.digits[i]) + borrow;
   uint128_t ai = a.digits[i];
@@ -289,6 +311,7 @@ Phần này hệ thống lại **toàn bộ kiến trúc, cơ sở toán học, 
   - **Chi tiết đắt giá:** Tại sao phải tính `sub` bằng `uint128_t` thay vì `uint64_t`? Vì nếu `b.digits[i] == 0xFFFFFFFFFFFFFFFFULL` ($2^{64}-1$) và `borrow == 1`, phép cộng `uint64_t` sẽ bị **tràn vòng về 0**, làm sai hoàn toàn nhánh `if (ai >= sub)`! Dùng `uint128_t` triệt tiêu hoàn toàn bug kinh điển này.
 
 #### 6. Phép nhân Schoolbook tối ưu (Dòng 256–284)
+
 ```cpp
 260: int len_a = static_cast<int>(N);
 261: while (len_a > 0 && a.digits[len_a - 1] == 0) len_a--;
@@ -312,19 +335,26 @@ Phần này hệ thống lại **toàn bộ kiến trúc, cơ sở toán học, 
 281:     }
 282: }
 ```
+
 - **Tại sao `prod` không bao giờ tràn `uint128_t`?**
-  $$\max(\text{prod}) = (2^{64}-1)(2^{64}-1) + (2^{64}-1) + (2^{64}-1) = 2^{128} - 1$$
-  Khớp vừa khít giá trị cực đại của `uint128_t`! Đây là bất đẳng thức kinh điển trong số học đa độ chính xác (TAOCP Vol 2).
-- **Tối ưu thực tế:** Với số 512-bit nằm trong `big_t` 2048-bit (`N = 32`), nhờ cắt `len_a = 8`, `len_b = 8`, số vòng lặp chỉ là $8 \times 8 = 64$ thay vì $32 \times 32 = 1024$ (nhanh hơn **16 lần**!).
+
+$$
+\max(\text{prod}) = (2^{64}-1)(2^{64}-1) + (2^{64}-1) + (2^{64}-1) = 2^{128} - 1
+$$
+
+- Khớp vừa khít giá trị cực đại của `uint128_t`! Đây là bất đẳng thức kinh điển trong số học đa độ chính xác (TAOCP Vol 2).
+- **Tối ưu thực tế:** Với số 512-bit nằm trong `big_t` 2048-bit (`N = 32`), nhờ cắt `len_a = 8`, `len_b = 8`, số vòng lặp chỉ là `8 × 8 = 64` thay vì `32 × 32 = 1024` (nhanh hơn **16 lần**!).
 - **Dòng 277–281:** Lan truyền nốt phần nhớ `carry` lên các limb cao hơn `i + len_b` cho đến khi `carry == 0` hoặc chạm biên `N`.
 
 #### 7. Phép dịch bit `<<` và `>>` (Dòng 286–332)
+
 - Tách độ dịch thành 2 phần: `limb_shift = shift / 64` (dịch nguyên từ nhớ) và `bit_shift = shift % 64` (dịch bit trong từ nhớ).
 - **Tại sao phải tách 2 nhánh `if (bit_shift == 0)` và `else`?**
   - Trong nhánh `else`, ta viết `a.digits[...] >> (64 - bit_shift)` (với `<<`) hoặc `<< (64 - bit_shift)` (với `>>`).
-  - Nếu `bit_shift == 0`, biểu thức `64 - bit_shift` bằng **`64`**. Trong C++, dịch một số `uint64_t` đi $\ge 64$ bit là **Undefined Behavior** (trên CPU x86_64 lệnh `SHL`/`SHR` chỉ lấy `count mod 64 = 0` nên sẽ cho kết quả sai bét!). Tách nhánh `bit_shift == 0` loại bỏ hoàn toàn UB này.
+  - Nếu `bit_shift == 0`, biểu thức `64 - bit_shift` bằng **`64`**. Trong C++, dịch một số `uint64_t` đi ≥ 64 bit là **Undefined Behavior** (trên CPU x86_64 lệnh `SHL`/`SHR` chỉ lấy `count mod 64 = 0` nên sẽ cho kết quả sai bét!). Tách nhánh `bit_shift == 0` loại bỏ hoàn toàn UB này.
 
 #### 8. Lấy dư với số nhỏ `mod_small` (Dòng 335–348)
+
 ```cpp
 uint128_t rem = 0;
 for (int i = top; i >= 0; i--) {
@@ -332,18 +362,24 @@ for (int i = top; i >= 0; i--) {
 }
 return static_cast<uint32_t>(rem);
 ```
+
 - **Nguyên lý (Sơ đồ Horner trong cơ số $2^{64}$):**
-  $$A = ((\dots (d_{\text{top}} \cdot 2^{64} + d_{\text{top}-1}) \cdot 2^{64} + \dots) \cdot 2^{64} + d_0) \pmod m$$
-- **Chứng minh không tràn `uint128_t`:** Vì `m` kiểu `uint32_t` ($m < 2^{32}$), sau mỗi bước `rem < m < 2^32`. Do đó `(rem << 64) | a.digits[i] < 2^96 < 2^128`.
-- **Vai trò:** Dùng cho tầng sàng 302 số nguyên tố nhỏ trong `prime.cpp`, độ phức tạp chỉ $O(\text{top}) = O(n)$ (chỉ ~8 phép chia phần cứng cho số 512-bit!).
+
+$$
+A \equiv \Bigl(\bigl(\dots(d_{\text{top}} \cdot 2^{64} + d_{\text{top}-1}) \cdot 2^{64} + \dots\bigr) \cdot 2^{64} + d_0\Bigr) \pmod m
+$$
+
+- **Chứng minh không tràn `uint128_t`:** Vì `m` kiểu `uint32_t` ($m \lt 2^{32}$), sau mỗi bước `rem < m < 2^32`. Do đó `(rem << 64) | a.digits[i] < 2^96 < 2^128`.
+- **Vai trò:** Dùng cho tầng sàng 302 số nguyên tố nhỏ trong `prime.cpp`, độ phức tạp chỉ `O(top) = O(n)` (chỉ ~8 phép chia phần cứng cho số 512-bit!).
 
 #### 9. Phép chia số lớn `divmod` — Knuth Algorithm D (Dòng 367–506)
+
 Đây là phần quan trọng nhất quyết định tốc độ toàn bộ chương trình (tăng tốc **~160 lần** so với chia nhị phân: `mulmod` 512-bit từ `72 µs` xuống `0.44 µs`, `modexp` 512-bit từ `~55 ms` xuống `0.24 ms`).
 
 - **Xử lý đầu vào & Aliasing (Dòng 370–389):**
-  - Tính vào biến cục bộ `quo, rem` rồi cuối hàm (dòng 488–489) mới gán `q = quo; r = rem;` $\Rightarrow$ an toàn ngay cả khi người gọi truyền `divmod(a, b, a, r)`.
+  - Tính vào biến cục bộ `quo, rem` rồi cuối hàm (dòng 488–489) mới gán `q = quo; r = rem;` ⇒ an toàn ngay cả khi người gọi truyền `divmod(a, b, a, r)`.
   - `n == 0` (chia cho 0): trả `q = r = 0` an toàn, không crash.
-  - `a < b`: trả ngay `q = 0, r = a` trong $O(N)$.
+  - `a < b`: trả ngay `q = 0, r = a` trong `O(N)`.
 - **Đường tắt chia 1 limb (`n == 1`, Dòng 390–399 — Short Division):**
   - Chia trực tiếp từ limb cao xuống thấp bằng `uint128_t`: `cur = (cur_rem << 64) | a.digits[i]`.
 - **Knuth Algorithm D (`n >= 2`, Dòng 400–486):** Chia dài giống tiểu học nhưng trong cơ số $B = 2^{64}$:
@@ -357,7 +393,7 @@ return static_cast<uint32_t>(rem);
     - **D3 — Ước lượng & Hiệu chỉnh $\hat{q}$ (Dòng 430–440):**
       - Lấy 2 limb cao nhất của phần bị chia hiện tại: `num = u[j+n] * B + u[j+n-1]`.
       - Tính $\hat{q} = \lfloor \text{num} / v_{n-1} \rfloor$ và $\hat{r} = \text{num} \bmod v_{n-1}$.
-      - Kiểm tra thêm bằng limb thứ hai $v_{n-2}$ và $u_{j+n-2}$:
+      - Kiểm tra thêm bằng limb thứ hai `v[n-2]` và `u[j+n-2]`:
         ```cpp
         while (q_hat >= BASE || q_hat * v_lo > ((r_hat << 64) | u[j + n - 2])) {
             q_hat--;
@@ -365,22 +401,28 @@ return static_cast<uint32_t>(rem);
             if (r_hat >= BASE) break;
         }
         ```
-        *Ý nghĩa:* Nếu $\hat{q} \cdot (v_{n-1} B + v_{n-2}) > u_{j+n} B^2 + u_{j+n-1} B + u_{j+n-2}$ (tương đương $\hat{q} v_{n-2} > \hat{r} B + u_{j+n-2}$), thì $\hat{q}$ chắc chắn quá lớn ít nhất 1 đơn vị $\Rightarrow$ giảm $\hat{q}$ đi 1, tăng $\hat{r}$ thêm $v_{n-1}$. Nếu `r_hat >= BASE` thì vế phải $\ge B^2 > \hat{q} \cdot v_{n-2}$ chắc chắn thỏa nên `break` luôn (cũng tránh tràn `r_hat << 64` trong `uint128_t`!). Vòng `while` này chạy **tối đa 2 lần** và loại trừ hầu hết ước lượng sai (chỉ còn sai lệch 1 đơn vị với xác suất $\approx 2 / 2^{64}$).
+      - *Ý nghĩa:* Nếu bất đẳng thức sau xảy ra:
+
+$$
+\hat{q} \cdot (v_{n-1} B + v_{n-2}) \gt u_{j+n} B^2 + u_{j+n-1} B + u_{j+n-2} \iff \hat{q} \cdot v_{n-2} \gt \hat{r} \cdot B + u_{j+n-2}
+$$
+
+      - thì $\hat{q}$ chắc chắn quá lớn ít nhất 1 đơn vị ⇒ giảm $\hat{q}$ đi 1, tăng $\hat{r}$ thêm `v[n-1]`. Nếu `r_hat >= BASE` thì vế phải $\ge B^2 \gt \hat{q} \cdot v_{n-2}$ chắc chắn thỏa nên `break` luôn (cũng tránh tràn `r_hat << 64` trong `uint128_t`!). Vòng `while` này chạy **tối đa 2 lần** và loại trừ hầu hết ước lượng sai (chỉ còn sai lệch 1 đơn vị với xác suất $\approx 2 / 2^{64}$).
     - **D4 — Nhân và Trừ `u[j..j+n] -= qh * v` (Dòng 442–462):**
       - Nhân `qh * v[i] + mul_carry` ra `p` (128-bit): tách `p_lo` (64 bit thấp) và `mul_carry` (64 bit cao).
       - Trừ có mượn 2 bước: `t = x - p_lo` (mượn `b1`), `t2 = t - borrow` (mượn `b2`), gộp `borrow = b1 | b2` (tránh tràn `p_lo + borrow` trong 64 bit!).
     - **D5/D6 — Cộng bù Add-back (Dòng 464–474):**
-      - Nếu `(b1_top | b2_top) != 0`, nghĩa là kết quả bị âm (trường hợp cực hiếm ~ $2/2^{64}$ khi $\hat{q}$ vẫn lớn hơn thương thật đúng 1 đơn vị).
+      - Nếu `(b1_top | b2_top) != 0`, nghĩa là kết quả bị âm (trường hợp cực hiếm ≈ $2/2^{64}$ khi $\hat{q}$ vẫn lớn hơn thương thật đúng 1 đơn vị).
       - Giảm `qh--` và cộng trả lại `v[0..n-1]` vào `u[j..j+n-1]`, phần nhớ tràn ra ở `u[j+n]` triệt tiêu đúng dấu âm (mod $2^{64}$).
     - Dòng 475: Ghi limb thương `quo.digits[j] = qh`.
   - **Bước D8 — Khử chuẩn hóa phần dư (Dòng 478–485):**
     - Dịch phải `u[0..n-1]` đi `s` bit để khôi phục phần dư thật `rem`.
-- **Độ phức tạp Knuth D:** $O(n \cdot (m_{\text{len}} - n + 1))$. Trong `modular_exponentiation`, tích có $2n$ limb chia cho $p$ có $n$ limb $\Rightarrow O(n^2)$, tương đương đúng 1 phép nhân!
+- **Độ phức tạp Knuth D:** `O(n * (m_len - n + 1))`. Trong `modular_exponentiation`, tích có `2n` limb chia cho `p` có `n` limb ⇒ `O(n^2)`, tương đương đúng 1 phép nhân!
 
 ### B. Bộ câu hỏi phản biện & vấn đáp — Phần 2.2
 
 > **Q2.1: Tại sao `uint_t<N>` không hỗ trợ số âm? Lỡ trong phép trừ `a - b` mà `a < b` thì sao?**
-> - **Đáp:** Mọi đại lượng trong Diffie-Hellman ($p, q, g, a, b, A, B, s$) đều nằm trong $[0, p-1]$, không bao giờ âm. Việc bỏ bit dấu giúp cấu trúc đơn giản, nhanh hơn và tránh nhánh xử lý bù 2. Trong toàn bộ code, mọi chỗ gọi `a - b` đều có tiền điều kiện đảm bảo $a \ge b$ (ví dụ `p - 1`, `p - 2`, `hi - lo` sau khi check `if (hi <= lo)`, hay `p - y` sau `y = y % p`). Nếu gọi `a - b` khi `a < b`, kết quả sẽ tràn vòng theo modulo $2^{64N}$ giống `uint64_t` trong C++.
+> - **Đáp:** Mọi đại lượng trong Diffie-Hellman (`p, q, g, a, b, A, B, s`) đều nằm trong `[0, p - 1]`, không bao giờ âm. Việc bỏ bit dấu giúp cấu trúc đơn giản, nhanh hơn và tránh nhánh xử lý bù 2. Trong toàn bộ code, mọi chỗ gọi `a - b` đều có tiền điều kiện đảm bảo `a >= b` (ví dụ `p - 1`, `p - 2`, `hi - lo` sau khi check `if (hi <= lo)`, hay `p - y` sau `y = y % p`). Nếu gọi `a - b` khi `a < b`, kết quả sẽ tràn vòng theo modulo $2^{64N}$ giống `uint64_t` trong C++.
 >
 > **Q2.2: Tại sao chọn `N` cố định bằng `template <size_t N>` thay vì dùng `std::vector<uint64_t>` cho linh hoạt kích thước?**
 > - **Đáp:** Trong Miller-Rabin và `modular_exponentiation`, một lần sinh safe prime phải thực hiện hàng trăm nghìn phép `+`, `-`, `*`, `%`. Nếu dùng `std::vector`, mỗi biến trung gian phải gọi `new`/`delete` trên Heap, gây overhead rất lớn và phân mảnh cache. Dùng mảng tĩnh trên Stack nhanh hơn gấp nhiều lần, mà vẫn dễ mở rộng kích thước chỉ bằng cách sửa 1 hằng số `MAX_PRIME_BITS` duy nhất ở dòng 183 `bigint.cpp`.
@@ -398,10 +440,10 @@ return static_cast<uint32_t>(rem);
 > - **Đáp:** Mạnh đã viết riêng bộ test `tests/crosscheck_div_stress.py` chuyên sinh các số "hiểm" (nhiều limb toàn `0`, `0x8000000000000000`, `0xFFFFFFFFFFFFFFFF`...) gồm **50.016 phép chia**. Khi gắn bộ đếm tạm vào code, bộ test này đã kích hoạt nhánh cộng bù đúng **3.242 lần** và nhánh hiệu chỉnh $\hat{q}$ **53.062 lần**, đối chiếu với Python cho **0 sai lệch**.
 >
 > **Q2.7: Trong `divmod` dòng 438, tại sao có dòng `if (r_hat >= BASE) break;`?**
-> - **Đáp:** Hai lý do: (1) Về toán học, nếu $\hat{r} \ge B = 2^{64}$ thì vế phải $\hat{r} \cdot B + u_{j+n-2} \ge B^2$, trong khi vế trái $\hat{q} \cdot v_{n-2} \le (B-1)^2 < B^2$, nên điều kiện vòng lặp chắc chắn sai; (2) Về lập trình, nếu không `break`, phép dịch `r_hat << 64` ở lần kiểm tra tiếp theo sẽ **tràn `uint128_t`** và so sánh sai!
+> - **Đáp:** Hai lý do: (1) Về toán học, nếu $\hat{r} \ge B = 2^{64}$ thì vế phải $\hat{r} \cdot B + u_{j+n-2} \ge B^2$, trong khi vế trái $\hat{q} \cdot v_{n-2} \le (B-1)^2 \lt B^2$, nên điều kiện vòng lặp chắc chắn sai; (2) Về lập trình, nếu không `break`, phép dịch `r_hat << 64` ở lần kiểm tra tiếp theo sẽ **tràn `uint128_t`** và so sánh sai!
 >
-> **Q2.8: Tại sao trong `to_dec()` lại chia cho $10^{18}$ mà không chia cho $10$ hay $10^{19}$?**
-> - **Đáp:** Chia cho $10$ phải lặp ~155 lần cho số 512-bit, còn chia cho $10^{18}$ chỉ lặp ~9 lần (nhanh gấp 18 lần). Không chọn $10^{19}$ vì dù $10^{19} < 2^{64} \approx 1.844 \times 10^{19}$, chọn $10^{18}$ an toàn và chẵn chữ số, mỗi lần lấy ra đúng 18 chữ số thập phân dễ format bằng `"%018llu"`.
+> **Q2.8: Tại sao trong `to_dec()` lại chia cho $10^{18}$ mà không chia cho `10` hay $10^{19}$?**
+> - **Đáp:** Chia cho `10` phải lặp ~155 lần cho số 512-bit, còn chia cho $10^{18}$ chỉ lặp ~9 lần (nhanh gấp 18 lần). Không chọn $10^{19}$ vì dù $10^{19} \lt 2^{64} \approx 1.844 \times 10^{19}$, chọn $10^{18}$ an toàn và chẵn chữ số, mỗi lần lấy ra đúng 18 chữ số thập phân dễ format bằng `"%018llu"`.
 
 ---
 
@@ -412,6 +454,7 @@ return static_cast<uint32_t>(rem);
 ### A. Giải thích chi tiết từng khối / từng dòng code
 
 #### 1. Bộ 3 hàm theo `pseudocode-modular-operation.pdf` (Dòng 22–68)
+
 - **`AddMod(x, y, p)` (Dòng 23–32):**
   ```cpp
   x = x % p;
@@ -420,15 +463,21 @@ return static_cast<uint32_t>(rem);
   if (x >= p_minus_y) return x - p_minus_y;
   return x + y;
   ```
-  - **Ý tưởng:** Nếu viết `(x + y) % p` trong thanh ghi đúng $n$-bit (khi $p$ sát $2^n$), tổng `x + y` có thể vượt $2^n$ gây tràn trước khi `% p`. Thay vào đó, vì $0 \le x, y < p$, ta kiểm tra tương đương $x + y \ge p \iff x \ge p - y$ (phép $p - y$ không bao giờ âm hay tràn!). Nếu đúng thì trả $x - (p - y) = x + y - p$, ngược lại $x + y < p < 2^n$ nên cộng trực tiếp không tràn!
+  - **Ý tưởng:** Nếu viết `(x + y) % p` trong thanh ghi đúng `n` bit (khi `p` sát $2^n$), tổng `x + y` có thể vượt $2^n$ gây tràn trước khi `% p`. Thay vào đó, vì $0 \le x, y \lt p$, ta kiểm tra tương đương $x + y \ge p \iff x \ge p - y$ (phép `p - y` không bao giờ âm hay tràn!). Nếu đúng thì trả `x - (p - y) = x + y - p`, ngược lại $x + y \lt p \lt 2^n$ nên cộng trực tiếp không tràn!
 - **`MultMod(x, y, p)` (Dòng 37–49):**
-  - Kỹ thuật **Double-and-Add** nhị phân: viết $y = \sum_{i=0}^{n-1} y_i 2^i$, suy ra $x \cdot y \equiv \sum_{y_i = 1} (x \cdot 2^i) \pmod p$.
+  - Kỹ thuật **Double-and-Add** nhị phân: viết $y = \sum_{i=0}^{n-1} y_i 2^i$, suy ra:
+
+$$
+x \cdot y \equiv \sum_{y_i = 1} (x \cdot 2^i) \pmod p
+$$
+
   - Mỗi bước: nếu bit `i` của `y` bằng 1 thì `ret = AddMod(ret, x, p)`, sau đó nhân đôi `x = AddMod(x, x, p)`.
-  - Mọi giá trị trung gian luôn $< p$, không cần bộ đệm $2n$-bit. Nhược điểm: cần $n$ vòng lặp `AddMod` (tốn $O(n \cdot N)$), chậm hơn nhân khối + Knuth D khoảng 3 lần.
+  - Mọi giá trị trung gian luôn `< p`, không cần bộ đệm `2n` bit. Nhược điểm: cần `n` vòng lặp `AddMod` (tốn `O(n * N)`), chậm hơn nhân khối + Knuth D khoảng 3 lần.
 - **`ExpMod(x, y, p)` (Dòng 53–68):**
   - Lũy thừa mô-đun dạng **Right-to-Left Square-and-Multiply** gọi `MultMod`.
 
 #### 2. `modular_exponentiation(base, exp, mod)` — Hàm chính của nhóm (Dòng 91–111)
+
 ```cpp
 95:  if (mod.is_zero() || mod == one) return big_t();
 98:  assert(mod.bit_length() <= MAX_PRIME_BITS);
@@ -443,7 +492,8 @@ return static_cast<uint32_t>(rem);
 109: }
 110: return result;
 ```
-- **Dòng 95:** Trường hợp biên: `mod == 0` (tránh chia 0) hoặc `mod == 1` (mọi số mod 1 đều bằng 0) trả về `0`. Nếu `exp == 0`, `nbits == 0`, vòng `for` không chạy, trả về `result = 1` (đúng quy ước $b^0 \bmod m = 1$ với $m > 1$).
+
+- **Dòng 95:** Trường hợp biên: `mod == 0` (tránh chia 0) hoặc `mod == 1` (mọi số mod 1 đều bằng 0) trả về `0`. Nếu `exp == 0`, `nbits == 0`, vòng `for` không chạy, trả về `result = 1` (đúng quy ước $b^0 \bmod m = 1$ với `m > 1`).
 - **Dòng 98:** `assert` bảo vệ tiền điều kiện: `mod` không quá `MAX_PRIME_BITS` để tích `result * result` không vượt 2048 bit.
 - **Dòng 104 (`for (size_t i = nbits; i-- > 0;)`):** Cú pháp duyệt ngược chuẩn mực cho biến không dấu `size_t` (nếu viết `for (size_t i = nbits - 1; i >= 0; i--)` sẽ **lặp vô hạn** vì `size_t` không bao giờ âm!).
 - **Thuật toán Left-to-Right Square-and-Multiply:**
@@ -452,10 +502,11 @@ return static_cast<uint32_t>(rem);
     - Bit 3 (`1`): $1^2 \cdot 3 \equiv 3 \pmod 7$
     - Bit 2 (`1`): $3^2 \cdot 3 = 27 \equiv 6 \pmod 7$
     - Bit 1 (`0`): $6^2 = 36 \equiv 1 \pmod 7$
-    - Bit 0 (`1`): $1^2 \cdot 3 \equiv 3 \pmod 7$ $\Rightarrow$ Kết quả là `3`.
-  - **Số phép toán:** Với số mũ $k$ bit, cần đúng $k$ phép bình phương và trung bình $k/2$ phép nhân $\Rightarrow \approx 1.5k$ phép nhân mô-đun (~768 phép cho 512-bit, thay vì $2^{512}$ phép nhân ngây thơ!). Thời gian thực tế: **~0.24 ms** (512-bit), **~1.17 ms** (1024-bit).
+    - Bit 0 (`1`): $1^2 \cdot 3 \equiv 3 \pmod 7$ ⇒ Kết quả là `3`.
+  - **Số phép toán:** Với số mũ `k` bit, cần đúng `k` phép bình phương và trung bình `k/2` phép nhân ⇒ `≈ 1.5k` phép nhân mô-đun (~768 phép cho 512-bit, thay vì $2^{512}$ phép nhân ngây thơ!). Thời gian thực tế: **~0.24 ms** (512-bit), **~1.17 ms** (1024-bit).
 
-#### 3. `choose_generator(p)` — Chọn phần tử sinh nhóm con bậc $q$ (Dòng 133–155)
+#### 3. `choose_generator(p)` — Chọn phần tử sinh nhóm con bậc `q` (Dòng 133–155)
+
 ```cpp
 141: big_t p_minus_1 = p - one;
 142: big_t q = p_minus_1 >> 1; // q = (p - 1) / 2
@@ -469,49 +520,56 @@ return static_cast<uint32_t>(rem);
 152:     }
 153: }
 ```
+
 - **Cơ sở toán học (CỰC KỲ HAY BỊ HỎI):**
-  - Với Safe Prime $p = 2q + 1$ ($q$ nguyên tố), nhóm nhân $\mathbb{Z}_p^*$ là nhóm cyclic bậc $p - 1 = 2q$.
-  - Theo **Định lý Lagrange**, bậc (order) của mọi phần tử $x \in \mathbb{Z}_p^*$ phải là ước của $2q$, tức chỉ có thể thuộc tập $\{1, 2, q, 2q\}$:
-    - Bậc 1: duy nhất $x = 1$.
-    - Bậc 2: duy nhất $x = p - 1 \equiv -1 \pmod p$.
-    - Bậc $q$: tất cả các **thặng dư bậc hai** (quadratic residues) khác 1 — có đúng $q - 1$ phần tử.
-    - Bậc $2q$: các phi-thặng dư bậc hai khác $p - 1$ (phần tử sinh của toàn bộ $\mathbb{Z}_p^*$) — có đúng $q - 1$ phần tử.
-  - Khi ta lấy $g = h^2 \bmod p$ (với $h = 2 \Rightarrow g = 4$ cho mọi $p > 5$), $g$ chắc chắn là thặng dư bậc hai nên theo tiêu chuẩn Euler:
-    $$g^q = (h^2)^{(p-1)/2} = h^{p-1} \equiv 1 \pmod p$$
-    Vì $g \ne 1$ và $q$ là số nguyên tố, bậc của $g$ là ước $> 1$ của $q$ $\Rightarrow$ **bậc của $g$ chắc chắn bằng đúng $q$!**
-- **Tại sao nhóm chọn $g$ bậc $q$ (cụ thể $g = 4$) thay vì $g$ bậc $2q$ (căn nguyên thủy của cả $\mathbb{Z}_p^*$)?**
-  1. **Tránh rò rỉ 1 bit của khóa bí mật $a$:** Nếu $g$ có bậc $2q$, thì $A = g^a \bmod p$ là thặng dư bậc hai khi và chỉ khi **$a$ chẵn**! Kẻ nghe lén chỉ cần tính ký hiệu Legendre $\left(\frac{A}{p}\right) \equiv A^q \pmod p$ là biết ngay bit cuối cùng (tính chẵn/lẻ) của khóa riêng $a$! Ngược lại, khi $g$ sinh nhóm con thặng dư bậc hai bậc $q$, mọi $g^a$ đều là thặng dư bậc hai nên ký hiệu Legendre luôn bằng $+1$, **không rò rỉ bất kỳ thông tin nào về $a$**.
-  2. **Đúng cho mọi safe prime $p > 5$:** Trong RFC 7919 dùng $g = 2$ vì họ chọn riêng các safe prime thỏa $p \equiv 7 \pmod 8$ (khi đó 2 là thặng dư bậc hai). Chương trình sinh $p$ ngẫu nhiên nên $p$ có thể $\equiv 3 \pmod 8$ hoặc $7 \pmod 8$; chọn $g = 2^2 = 4$ đảm bảo luôn sinh đúng nhóm con bậc $q$ cho **mọi** safe prime $p > 5$.
+  - Với Safe Prime $p = 2q + 1$ (`q` nguyên tố), nhóm nhân $\mathbb{Z}_p^{\ast}$ là nhóm cyclic bậc $p - 1 = 2q$.
+  - Theo **Định lý Lagrange**, bậc (order) của mọi phần tử $x \in \mathbb{Z}_p^{\ast}$ phải là ước của `2q`, tức chỉ có thể thuộc tập `{1, 2, q, 2q}`:
+    - Bậc `1`: duy nhất `x = 1`.
+    - Bậc `2`: duy nhất $x = p - 1 \equiv -1 \pmod p$.
+    - Bậc `q`: tất cả các **thặng dư bậc hai** (quadratic residues) khác 1 — có đúng `q - 1` phần tử.
+    - Bậc `2q`: các phi-thặng dư bậc hai khác `p - 1` (phần tử sinh của toàn bộ $\mathbb{Z}_p^{\ast}$) — có đúng `q - 1` phần tử.
+  - Khi ta lấy $g = h^2 \bmod p$ (với `h = 2` ⇒ `g = 4` cho mọi `p > 5`), `g` chắc chắn là thặng dư bậc hai nên theo tiêu chuẩn Euler:
+
+$$
+g^q = (h^2)^{(p-1)/2} = h^{p-1} \equiv 1 \pmod p
+$$
+
+  - Vì `g ≠ 1` và `q` là số nguyên tố, bậc của `g` là ước `> 1` của `q` ⇒ **bậc của `g` chắc chắn bằng đúng `q`!**
+- **Tại sao nhóm chọn `g` bậc `q` (cụ thể `g = 4`) thay vì `g` bậc `2q` (căn nguyên thủy của cả $\mathbb{Z}_p^{\ast}$)?**
+  1. **Tránh rò rỉ 1 bit của khóa bí mật `a`:** Nếu `g` có bậc `2q`, thì $A = g^a \bmod p$ là thặng dư bậc hai khi và chỉ khi **`a` chẵn**! Kẻ nghe lén chỉ cần tính ký hiệu Legendre $\left(\frac{A}{p}\right) \equiv A^q \pmod p$ là biết ngay bit cuối cùng (tính chẵn/lẻ) của khóa riêng `a`! Ngược lại, khi `g` sinh nhóm con thặng dư bậc hai bậc `q`, mọi $g^a$ đều là thặng dư bậc hai nên ký hiệu Legendre luôn bằng `+1`, **không rò rỉ bất kỳ thông tin nào về `a`**.
+  2. **Đúng cho mọi safe prime `p > 5`:** Trong RFC 7919 dùng `g = 2` vì họ chọn riêng các safe prime thỏa $p \equiv 7 \pmod 8$ (khi đó 2 là thặng dư bậc hai). Chương trình sinh `p` ngẫu nhiên nên `p` có thể $\equiv 3 \pmod 8$ hoặc $7 \pmod 8$; chọn $g = 2^2 = 4$ đảm bảo luôn sinh đúng nhóm con bậc `q` cho **mọi** safe prime `p > 5`.
 
 #### 4. `is_valid_public_value(v, p)` — Xác thực khóa công khai (Dòng 160–168)
+
 ```cpp
 164: if (p < big_t::from_u64(7)) return false;
 165: if (v < two || v > p - two) return false;
 166: big_t q = (p - one) >> 1;
 167: return modular_exponentiation(v, q, p) == one;
 ```
-- **Kiểm tra 1 (`2 <= v <= p - 2`):** Loại bỏ $v = 0$, $v = 1$ (bậc 1 $\Rightarrow s = 1^a = 1$), và $v = p - 1$ (bậc 2 $\Rightarrow s = (-1)^a \in \{1, p-1\}$, kẻ tấn công đoán ngay bí mật chung và biết tính chẵn/lẻ của $a$).
-- **Kiểm tra 2 (`v^q mod p == 1`):** Xác nhận $v$ thực sự nằm trong nhóm con bậc nguyên tố $q$ (không thuộc nhóm con nhỏ hay coset bậc $2q$), ngăn chặn hoàn toàn **Small-Subgroup Confinement Attack** (Lim & Lee, 1997).
+
+- **Kiểm tra 1 (`2 <= v <= p - 2`):** Loại bỏ `v = 0`, `v = 1` (bậc 1 ⇒ $s = 1^a = 1$), và `v = p - 1` (bậc 2 ⇒ $s = (-1)^a \in \{1, p-1\}$, kẻ tấn công đoán ngay bí mật chung và biết tính chẵn/lẻ của `a`).
+- **Kiểm tra 2 ($v^q \equiv 1 \pmod p$):** Xác nhận `v` thực sự nằm trong nhóm con bậc nguyên tố `q` (không thuộc nhóm con nhỏ hay coset bậc `2q`), ngăn chặn hoàn toàn **Small-Subgroup Confinement Attack** (Lim & Lee, 1997).
 
 ### B. Bộ câu hỏi phản biện & vấn đáp — Phần 2.3
 
 > **Q3.1: Tại sao trong `dh.cpp` lại cài cả 2 hàm `ExpMod` và `modular_exponentiation`? Khác nhau ở chỗ nào?**
-> - **Đáp:** `AddMod`/`MultMod`/`ExpMod` được cài đặt để đối chiếu theo tài liệu `pseudocode-modular-operation.pdf` của thầy (giữ mọi biến trung gian trong $n$-bit bằng Double-and-Add, không cần bộ nhớ gấp đôi nhưng chậm hơn ~3 lần). Còn `modular_exponentiation` tận dụng bộ đệm $2n$-bit của `big_t` kết hợp nhân Schoolbook 128-bit và chia Knuth D, chạy nhanh hơn rất nhiều (0.24 ms cho 512-bit) nên được dùng trong luồng chính. Nhóm đã test chéo hai hàm cho kết quả trùng khớp 100%.
+> - **Đáp:** `AddMod`/`MultMod`/`ExpMod` được cài đặt để đối chiếu theo tài liệu `pseudocode-modular-operation.pdf` của thầy (giữ mọi biến trung gian trong `n` bit bằng Double-and-Add, không cần bộ nhớ gấp đôi nhưng chậm hơn ~3 lần). Còn `modular_exponentiation` tận dụng bộ đệm `2n` bit của `big_t` kết hợp nhân Schoolbook 128-bit và chia Knuth D, chạy nhanh hơn rất nhiều (0.24 ms cho 512-bit) nên được dùng trong luồng chính. Nhóm đã test chéo hai hàm cho kết quả trùng khớp 100%.
 >
 > **Q3.2: Nếu trong `choose_generator` tôi đặt cứng `g = 2` như chương trình mẫu của đề bài thì có vấn đề gì không?**
-> - **Đáp:** Nếu $p \equiv 7 \pmod 8$ thì $2$ là thặng dư bậc hai (bậc $q$, tốt). Nhưng nếu $p \equiv 3 \pmod 8$ (xác suất 50%) thì $2$ là phi-thặng dư bậc hai (bậc $2q$), khi đó khóa công khai $A = 2^a \bmod p$ sẽ làm rò rỉ tính chẵn/lẻ của khóa riêng $a$ qua ký hiệu Legendre $A^q \bmod p \in \{+1, -1\}$. Chọn $g = h^2 \bmod p$ ($g = 4$) khắc phục hoàn toàn điểm này cho mọi safe prime $p > 5$.
+> - **Đáp:** Nếu $p \equiv 7 \pmod 8$ thì `2` là thặng dư bậc hai (bậc `q`, tốt). Nhưng nếu $p \equiv 3 \pmod 8$ (xác suất 50%) thì `2` là phi-thặng dư bậc hai (bậc `2q`), khi đó khóa công khai $A = 2^a \bmod p$ sẽ làm rò rỉ tính chẵn/lẻ của khóa riêng `a` qua ký hiệu Legendre $A^q \bmod p \in \{+1, -1\}$. Chọn $g = h^2 \bmod p$ (`g = 4`) khắc phục hoàn toàn điểm này cho mọi safe prime `p > 5`.
 >
 > **Q3.3: Nếu Alice không gọi `is_valid_public_value(B, p)` trước khi tính $s = B^a \bmod p$, kẻ tấn công làm gì được?**
-> - **Đáp:** Kẻ tấn công tích cực có thể thay $B$ bằng $B' = 1$ (ép bí mật chung $s = 1$, biết trước 100%!) hoặc $B' = p - 1$ (ép $s = (-1)^a \bmod p$, chỉ có 2 giá trị khả dĩ là $1$ nếu $a$ chẵn và $p-1$ nếu $a$ lẻ, vừa đoán được khóa phiên vừa làm lộ 1 bit khóa riêng $a$).
+> - **Đáp:** Kẻ tấn công tích cực có thể thay `B` bằng `B' = 1` (ép bí mật chung `s = 1`, biết trước 100%!) hoặc `B' = p - 1` (ép $s = (-1)^a \bmod p$, chỉ có 2 giá trị khả dĩ là `1` nếu `a` chẵn và `p - 1` nếu `a` lẻ, vừa đoán được khóa phiên vừa làm lộ 1 bit khóa riêng `a`).
 >
 > **Q3.4: Giao thức Diffie-Hellman cài trong đồ án có chống được tấn công Man-in-the-Middle (MitM) không? Thực tế TLS 1.3 giải quyết ra sao?**
-> - **Đáp:** **Không.** Diffie-Hellman thuần túy không có cơ chế xác thực danh tính: Mallory có thể đứng giữa thỏa thuận khóa $s_1$ với Alice và $s_2$ với Bob, giải mã rồi mã hóa lại mọi tin nhắn. Trong thực tế (như **TLS 1.3 / HTTPS**), DH ephemeral (`(EC)DHE`) luôn đi kèm **chứng chỉ số (Certificate)** do CA ký và **chữ ký số trên toàn bộ bản ghi bắt tay (`CertificateVerify`)** để xác thực server. Ngoài ra, khóa $s$ không dùng trực tiếp làm khóa AES mà đi qua hàm dẫn xuất khóa **HKDF**.
+> - **Đáp:** **Không.** Diffie-Hellman thuần túy không có cơ chế xác thực danh tính: Mallory có thể đứng giữa thỏa thuận khóa $s_1$ với Alice và $s_2$ với Bob, giải mã rồi mã hóa lại mọi tin nhắn. Trong thực tế (như **TLS 1.3 / HTTPS**), DH ephemeral (`(EC)DHE`) luôn đi kèm **chứng chỉ số (Certificate)** do CA ký và **chữ ký số trên toàn bộ bản ghi bắt tay (`CertificateVerify`)** để xác thực server. Ngoài ra, khóa `s` không dùng trực tiếp làm khóa AES mà đi qua hàm dẫn xuất khóa **HKDF**.
 >
 > **Q3.5: Forward Secrecy (PFS) là gì? Tại sao TLS 1.3 bắt buộc dùng `(EC)DHE` và loại bỏ RSA Key Exchange?**
-> - **Đáp:** Với RSA Key Exchange cũ, nếu kẻ tấn công ghi lại lưu lượng mã hóa hôm nay và 5 năm sau đánh cắp được khóa riêng của server, hắn giải mã được toàn bộ dữ liệu trong quá khứ. Với `(EC)DHE` (ephemeral), khóa riêng $a, b$ chỉ sinh tạm cho **duy nhất 1 phiên** rồi xóa ngay khỏi RAM; kể cả sau này khóa ký dài hạn của server bị lộ, kẻ tấn công vẫn không thể khôi phục bí mật chung $s = g^{ab} \bmod p$ của các phiên cũ.
+> - **Đáp:** Với RSA Key Exchange cũ, nếu kẻ tấn công ghi lại lưu lượng mã hóa hôm nay và 5 năm sau đánh cắp được khóa riêng của server, hắn giải mã được toàn bộ dữ liệu trong quá khứ. Với `(EC)DHE` (ephemeral), khóa riêng `a, b` chỉ sinh tạm cho **duy nhất 1 phiên** rồi xóa ngay khỏi RAM; kể cả sau này khóa ký dài hạn của server bị lộ, kẻ tấn công vẫn không thể khôi phục bí mật chung $s = g^{ab} \bmod p$ của các phiên cũ.
 >
 > **Q3.6: Tấn công Logjam (2015) là gì? Liên quan gì đến đồ án 512-bit của mình?**
-> - **Đáp:** Logjam (CVE-2015-4000) gồm 2 đòn: (1) kẻ tấn công MitM ép hạ cấp xuống `DHE_EXPORT` 512-bit; (2) bước tiền tính của thuật toán Sàng trường số (NFS) chỉ phụ thuộc vào $p$ chứ không phụ thuộc $a, b$, nên với các số nguyên tố 512-bit dùng chung phổ biến, chỉ cần tiền tính 1 lần (vài ngày trên cụm máy tính) là sau đó giải từng logarit rời rạc chỉ mất vài phút! Bài học: 512-bit chỉ phù hợp mục đích học tập/minh họa như Lab01; thực tế TLS 1.3 yêu cầu tối thiểu `ffdhe2048` (2048-bit) hoặc dùng **ECDHE** (X25519 / P-256).
+> - **Đáp:** Logjam (CVE-2015-4000) gồm 2 đòn: (1) kẻ tấn công MitM ép hạ cấp xuống `DHE_EXPORT` 512-bit; (2) bước tiền tính của thuật toán Sàng trường số (NFS) chỉ phụ thuộc vào `p` chứ không phụ thuộc `a, b`, nên với các số nguyên tố 512-bit dùng chung phổ biến, chỉ cần tiền tính 1 lần (vài ngày trên cụm máy tính) là sau đó giải từng logarit rời rạc chỉ mất vài phút! Bài học: 512-bit chỉ phù hợp mục đích học tập/minh họa như Lab01; thực tế TLS 1.3 yêu cầu tối thiểu `ffdhe2048` (2048-bit) hoặc dùng **ECDHE** (X25519 / P-256).
 >
 > **Q3.7: Thuật toán `modular_exponentiation` của nhóm có điểm yếu bảo mật nào về mặt thực thi không?**
 > - **Đáp:** Có — nó nhạy cảm với tấn công **kênh kề thời gian / năng lượng (Timing Attack / Simple Power Analysis - SPA)**. Vì nhánh `if (exp.test_bit(i))` chỉ chạy phép nhân khi bit khóa riêng là `1`, thời gian và năng lượng tiêu thụ sẽ khác nhau giữa bit `0` và bit `1`. Hướng khắc phục là cài **Montgomery Ladder** (thời gian hằng — constant-time: mỗi bit dù 0 hay 1 đều thực hiện đúng 1 phép bình phương và 1 phép nhân).
@@ -525,6 +583,7 @@ return static_cast<uint32_t>(rem);
 ### A. Giải thích chi tiết từng khối / từng dòng code
 
 #### 1. `fips202.cpp` — Cấu trúc Keccak Sponge & SHAKE128
+
 - **Trạng thái nội bộ (`keccak_state`, dòng 28–32):**
   ```cpp
   typedef struct {
@@ -533,9 +592,9 @@ return static_cast<uint32_t>(rem);
   } keccak_state;
   ```
 - **Thông số SHAKE128 (Chuẩn NIST FIPS 202):**
-  - Tổng kích thước trạng thái: $b = 1600$ bit (200 byte).
-  - **Rate (tốc độ hấp thụ/xuất):** $r = \text{SHAKE128\_RATE} = 168$ byte ($1344$ bit).
-  - **Capacity (dung lượng ẩn bảo mật):** $c = b - r = 256$ bit (32 byte) $\Rightarrow$ đảm bảo độ an toàn mật mã 128-bit (đạt $c/2 = 128$ bit chống đụng độ và 128-bit bảo mật cho XOF).
+  - Tổng kích thước trạng thái: `b = 1600` bit (200 byte).
+  - **Rate (tốc độ hấp thụ/xuất):** `r = SHAKE128_RATE = 168` byte (1344 bit).
+  - **Capacity (dung lượng ẩn bảo mật):** `c = b - r = 256` bit (32 byte) ⇒ đảm bảo độ an toàn mật mã 128-bit (đạt `c/2 = 128` bit chống đụng độ và 128-bit bảo mật cho XOF).
   - **Hoán vị cốt lõi:** `KeccakF1600_StatePermute(s)` gồm **24 vòng** (`NROUNDS = 24`), mỗi vòng có 5 bước phi tuyến và khuếch tán ($\theta, \rho, \pi, \chi, \iota$).
   - **Domain separation byte:** `0x1F` (dòng 626) theo chuẩn padding `1111 || 10*1` của SHAKE (phân biệt với SHA-3 dùng `0x06`).
 - **Quy trình 3 pha Sponge trong `prng_seed` và `prng_next_*`:**
@@ -545,6 +604,7 @@ return static_cast<uint32_t>(rem);
   4. `shake128_squeeze`: Đọc từng byte ra từ phần `rate` (168 byte đầu của `s`); mỗi khi đọc hết 168 byte (`pos == r`), lại gọi `KeccakF1600_StatePermute(s)` để tạo 168 byte ngẫu nhiên mới không giới hạn độ dài (**XOF — Extendable-Output Function**).
 
 #### 2. `prng.cpp` — Port đa nền tảng & Sửa lỗi từ code mẫu
+
 - **Dòng 17–27 (Xử lý biên dịch `rand_s` trên Windows MinGW-w64):**
   ```cpp
   #ifdef _WIN32
@@ -576,19 +636,19 @@ return static_cast<uint32_t>(rem);
 >   - **CSPRNG (Cryptographically Secure PRNG):** Tất định từ seed có entropy cao nhưng thỏa mãn 2 tính chất: (1) *Không thể dự đoán bit kế tiếp* (Next-bit unpredictability) và (2) *Chống truy ngược trạng thái* (Backtracking resistance).
 >   - Chương trình của nhóm dùng **kiến trúc CSPRNG 2 tầng**: lấy 256-bit entropy từ CSPRNG hạt nhân OS (`rand_s`/`getrandom`, tích hợp TRNG phần cứng) làm seed, rồi mở rộng vô hạn bằng **SHAKE128**.
 >
-> **Q4.2: Tại sao tuyệt đối không được dùng `std::rand()` hay `std::mt19937` để sinh khóa riêng $a, b$?**
+> **Q4.2: Tại sao tuyệt đối không được dùng `std::rand()` hay `std::mt19937` để sinh khóa riêng `a, b`?**
 > - **Đáp:**
->   - `rand()` dùng LCG ($X_{n+1} = (a X_n + c) \bmod m$), trạng thái rất nhỏ (`RAND_MAX` trên Windows chỉ là `32767`), chỉ cần 2–3 đầu ra là đoán hết; nếu dùng `srand(time(NULL))` thì 1 ngày chỉ có 86.400 seed, vét cạn trong < 1 ms!
->   - `std::mt19937` (Mersenne Twister) dù chu kỳ $2^{19937}-1$ nhưng phép biến đổi trạng thái (tempering) là **tuyến tính khả nghịch trên $\mathbb{F}_2$**. Chỉ cần quan sát đúng **624 số đầu ra 32-bit liên tiếp** là kẻ tấn công khôi phục 100% mảng trạng thái và dự đoán chính xác mọi khóa sinh ra sau đó!
+>   - `rand()` dùng LCG ($X_{n+1} = (a X_n + c) \bmod m$), trạng thái rất nhỏ (`RAND_MAX` trên Windows chỉ là `32767`), chỉ cần 2–3 đầu ra là đoán hết; nếu dùng `srand(time(NULL))` thì 1 ngày chỉ có 86.400 seed, vét cạn trong `< 1 ms`!
+>   - `std::mt19937` (Mersenne Twister) dù chu kỳ $2^{19937}-1$ nhưng phép biến đổi trạng thái (tempering) là **tuyến tính khả nghịch trên** $\mathbb{F}_2$. Chỉ cần quan sát đúng **624 số đầu ra 32-bit liên tiếp** là kẻ tấn công khôi phục 100% mảng trạng thái và dự đoán chính xác mọi khóa sinh ra sau đó!
 >
 > **Q4.3: SHAKE128 là hàm băm (XOF), tại sao lại dùng làm CSPRNG được?**
-> - **Đáp:** Nhờ cấu trúc **Keccak Sponge** có phần ẩn `capacity` $c = 256$ bit không bao giờ bị lộ ra trực tiếp ở đầu ra (chỉ đọc từ phần `rate` 168 byte), và mỗi block đều đi qua 24 vòng hoán vị phi tuyến `Keccak-f[1600]`. Vì phép hoán vị này có tính chất giả ngẫu nhiên và không thể đảo ngược khi không biết 256 bit `capacity`, đầu ra squeeze không thể phân biệt với chuỗi ngẫu nhiên thật trong thời gian đa thức.
+> - **Đáp:** Nhờ cấu trúc **Keccak Sponge** có phần ẩn `capacity` `c = 256` bit không bao giờ bị lộ ra trực tiếp ở đầu ra (chỉ đọc từ phần `rate` 168 byte), và mỗi block đều đi qua 24 vòng hoán vị phi tuyến `Keccak-f[1600]`. Vì phép hoán vị này có tính chất giả ngẫu nhiên và không thể đảo ngược khi không biết 256 bit `capacity`, đầu ra squeeze không thể phân biệt với chuỗi ngẫu nhiên thật trong thời gian đa thức.
 >
 > **Q4.4: Tại sao `rand_s()` lại an toàn còn `rand()` thì không, nghe tên giống nhau vậy?**
 > - **Đáp:** Tuy cùng nằm trong `<stdlib.h>` của CRT Windows, nhưng `rand()` là thuật toán LCG yếu cài trong thư viện C, còn `rand_s()` là hàm bảo mật gọi trực tiếp xuống nhân hệ điều hành Windows (`RtlGenRandom` / `BCryptGenRandom`) để lấy byte ngẫu nhiên chuẩn mật mã từ bể entropy của OS.
 >
 > **Q4.5: Kể tên 1 sự cố thực tế nổi tiếng do sinh số ngẫu nhiên yếu?**
-> - **Đáp:** **Debian OpenSSL CVE-2008-0166 (2008):** Một lập trình viên vô tình comment bỏ dòng trộn dữ liệu chưa khởi tạo vào entropy pool để tắt cảnh báo Valgrind, khiến nguồn entropy chỉ còn lại mỗi PID tiến trình (chỉ có $32.768$ giá trị!). Toàn bộ khóa SSH và chứng chỉ SSL tạo trên Debian/Ubuntu trong suốt 2 năm đều bị vét cạn trong vài giây. Ngoài ra còn vụ **Dual_EC_DRBG** (nghi ngờ cài backdoor của NSA) và nghiên cứu **Mining Your Ps and Qs (2012)** phát hiện hàng nghìn khóa RSA trùng ước chung do thiết bị nhúng thiếu entropy lúc khởi động.
+> - **Đáp:** **Debian OpenSSL CVE-2008-0166 (2008):** Một lập trình viên vô tình comment bỏ dòng trộn dữ liệu chưa khởi tạo vào entropy pool để tắt cảnh báo Valgrind, khiến nguồn entropy chỉ còn lại mỗi PID tiến trình (chỉ có 32.768 giá trị!). Toàn bộ khóa SSH và chứng chỉ SSL tạo trên Debian/Ubuntu trong suốt 2 năm đều bị vét cạn trong vài giây. Ngoài ra còn vụ **Dual_EC_DRBG** (nghi ngờ cài backdoor của NSA) và nghiên cứu **Mining Your Ps and Qs (2012)** phát hiện hàng nghìn khóa RSA trùng ước chung do thiết bị nhúng thiếu entropy lúc khởi động.
 
 ---
 
@@ -599,12 +659,13 @@ return static_cast<uint32_t>(rem);
 ### A. Giải thích chi tiết từng khối / từng dòng code
 
 #### 1. Sinh số lớn ngẫu nhiên & Rejection Sampling (Dòng 28–97)
+
 - **`random_upto_bits(ctx, bits)` (Dòng 28–55):**
-  - Sinh số ngẫu nhiên đồng đều trong $[0, 2^{\text{bits}} - 1]$ (không ép bật bit cao nhất).
+  - Sinh số ngẫu nhiên đồng đều trong $[0, 2^{b} - 1]$ với `b = bits` (không ép bật bit cao nhất).
   - Tính `num_limbs = (bits + 63) / 64`, đổ `prng_next_u64(ctx)` vào các limb.
   - Nếu `rem_bits = bits % 64 != 0`, dùng mặt nạ `mask = (1ULL << rem_bits) - 1ULL` để xóa sạch các bit thừa ở limb cuối.
 - **`random_bits(ctx, bits)` (Dòng 59–75):**
-  - Gọi `random_upto_bits(ctx, bits)` rồi bật bit cao nhất `res.set_bit(bits - 1)` $\Rightarrow$ đảm bảo kết quả nằm trong $[2^{\text{bits}-1}, 2^{\text{bits}} - 1]$, có **chính xác `bits` bit**.
+  - Gọi `random_upto_bits(ctx, bits)` rồi bật bit cao nhất `res.set_bit(bits - 1)` ⇒ đảm bảo kết quả nằm trong $[2^{b-1}, 2^{b} - 1]$, có **chính xác `bits` bit**.
 - **`random_range(ctx, lo, hi)` (Dòng 79–97) — Rejection Sampling:**
   ```cpp
   if (hi <= lo) return lo;
@@ -615,32 +676,42 @@ return static_cast<uint32_t>(rem);
       if (r <= range) return lo + r;
   }
   ```
-  - **Loại bỏ hoàn toàn Modulo Bias:** Thay vì lấy `r % (range + 1)` (làm các số nhỏ xuất hiện nhiều hơn các số lớn), ta chọn $k$ nhỏ nhất sao cho $2^k - 1 \ge \text{range}$, sinh đều $r \in [0, 2^k - 1]$, nếu $r > \text{range}$ thì **vứt bỏ sinh lại**.
-  - **Chứng minh hiệu quả:** Vì $k = \text{bit\_length}(\text{range})$, ta có $\text{range} \ge 2^{k-1}$, nên xác suất chấp nhận mỗi vòng là:
-    $$P(\text{accept}) = \frac{\text{range} + 1}{2^k} > \frac{2^{k-1}}{2^k} = \frac{1}{2}$$
-    Do đó, theo phân bố hình học, số lần lặp trung bình luôn **nhỏ hơn 2 lần**!
+  - **Loại bỏ hoàn toàn Modulo Bias:** Thay vì lấy `r % (range + 1)` (làm các số nhỏ xuất hiện nhiều hơn các số lớn), ta chọn `k` nhỏ nhất sao cho $2^k - 1 \ge R$ (với `R = range`), sinh đều $r \in [0, 2^k - 1]$, nếu `r > range` thì **vứt bỏ sinh lại**.
+  - **Chứng minh hiệu quả:** Vì `k = range.bit_length()`, ta có $R \ge 2^{k-1}$, nên xác suất chấp nhận mỗi vòng là:
+
+$$
+P(\text{accept}) = \frac{R + 1}{2^k} \gt \frac{2^{k-1}}{2^k} = \frac{1}{2}
+$$
+
+  - Do đó, theo phân bố hình học, số lần lặp trung bình luôn **nhỏ hơn 2 lần**!
 
 #### 2. Kiểm tra nguyên tố Miller-Rabin (Dòng 103–294)
+
 - Nhóm cài 2 phiên bản: `is_probable_prime_u64` (trên 64-bit, dùng để test nhanh các số Carmichael) và `is_probable_prime` (trên `big_t`).
 - **Phân tích từng dòng của `is_probable_prime(ctx, n, rounds = 40)` (Dòng 227–294):**
-  - Dòng 234–245: Xử lý biên: $n < 2 \Rightarrow$ `false`; $n \in \{2, 3\} \Rightarrow$ `true`; $n$ chẵn $\Rightarrow$ `false`.
-  - Dòng 248–251: Phân tích $n - 1 = 2^s \cdot d$ với $d$ lẻ:
+  - Dòng 234–245: Xử lý biên: `n < 2` ⇒ `false`; `n ∈ {2, 3}` ⇒ `true`; `n` chẵn ⇒ `false`.
+  - Dòng 248–251: Phân tích $n - 1 = 2^s \cdot d$ với `d` lẻ:
     - `s = count_trailing_zeros(n_minus_1)` (dùng `__builtin_ctzll` trên limb thấp nhất khác 0).
     - `d = n_minus_1 >> s`.
   - Dòng 259–291: Lặp `rounds` (mặc định 40) vòng độc lập:
-    1. Chọn cơ sở $a = \text{random\_range}(\text{ctx}, 2, n - 2)$ (phân phối đều 100%).
-    2. Tính $x = a^d \bmod n$. Nếu $x == 1$ hoặc $x == n - 1$ $\Rightarrow$ vòng này đạt (`continue`).
-    3. Lặp $r = 1 \dots s - 1$:
+    1. Chọn cơ sở `a = random_range(ctx, 2, n - 2)` (phân phối đều 100%).
+    2. Tính $x = a^d \bmod n$. Nếu `x == 1` hoặc `x == n - 1` ⇒ vòng này đạt (`continue`).
+    3. Lặp `r = 1 .. s - 1`:
        - Bình phương: `x = (x * x) % n`.
-       - Nếu $x == n - 1$: vòng này đạt (`passed_round = true; break;`).
-       - Nếu $x == 1$: **trả về `false` ngay lập tức!** (Vì trước khi bình phương $x \not\equiv \pm 1 \pmod n$ mà $x^2 \equiv 1 \pmod n \Rightarrow$ tìm thấy căn bậc hai không tầm thường của $1$, chắc chắn $n$ là hợp số!).
-    4. Nếu hết vòng `for` mà `!passed_round` $\Rightarrow$ $a^{n-1} \not\equiv 1 \pmod n$ (vi phạm định lý Fermat nhỏ) $\Rightarrow$ trả về `false`.
-  - Dòng 293: Qua hết `rounds` vòng $\Rightarrow$ trả về `true` (Probable Prime).
-- **Cơ sở xác suất (Định lý Monier–Rabin, 1980):** Với **mọi hợp số lẻ $n > 9$** (kể cả mọi số Carmichael!), số lượng "nhân chứng giả mạnh" (strong liars) không vượt quá $\frac{1}{4}(n - 1)$. Do đó sau $k$ vòng chọn $a$ độc lập:
-  $$\Pr[\text{hợp số lọt lưới}] \le 4^{-k} = 2^{-2k}$$
-  Với $k = 40$: xác suất sai $\le 4^{-40} = 2^{-80} \approx 8.27 \times 10^{-25}$ (nhỏ hơn cả xác suất tia vũ trụ làm lật bit RAM!).
+       - Nếu `x == n - 1`: vòng này đạt (`passed_round = true; break;`).
+       - Nếu `x == 1`: **trả về `false` ngay lập tức!** (Vì trước khi bình phương $x \not\equiv \pm 1 \pmod n$ mà $x^2 \equiv 1 \pmod n$ ⇒ tìm thấy căn bậc hai không tầm thường của `1`, chắc chắn `n` là hợp số!).
+    4. Nếu hết vòng `for` mà `!passed_round` ⇒ $a^{n-1} \not\equiv 1 \pmod n$ (vi phạm định lý Fermat nhỏ) ⇒ trả về `false`.
+  - Dòng 293: Qua hết `rounds` vòng ⇒ trả về `true` (Probable Prime).
+- **Cơ sở xác suất (Định lý Monier–Rabin, 1980):** Với **mọi hợp số lẻ `n > 9`** (kể cả mọi số Carmichael!), số lượng "nhân chứng giả mạnh" (strong liars) không vượt quá $(n - 1)/4$. Do đó sau `k` vòng chọn `a` độc lập, xác suất một hợp số lọt lưới là:
+
+$$
+P(\text{error}) \le 4^{-k} = 2^{-2k}
+$$
+
+- Với `k = 40`: xác suất sai $\le 4^{-40} = 2^{-80} \approx 8.27 \times 10^{-25}$ (nhỏ hơn cả xác suất tia vũ trụ làm lật bit RAM!).
 
 #### 3. Sàng đồng thời & Pipeline sinh Safe Prime 4 tầng (Dòng 301–470)
+
 - **Bảng `SMALL_PRIMES[]` (Dòng 301–329):** 302 số nguyên tố lẻ từ `3` đến `1999`.
 - **Hàm `passes_safe_prime_sieve(q, bitsize)` (Dòng 336–352):**
   ```cpp
@@ -655,23 +726,28 @@ return static_cast<uint32_t>(rem);
   return true;
   ```
   - **Đẳng thức sàng đồng thời (CỰC HAY ĐƯỢC KHEN):**
-    - Nếu $q \bmod r = 0 \implies r \mid q \implies q$ là hợp số.
-    - Nếu $p = 2q + 1 \equiv 0 \pmod r \iff 2q \equiv -1 \equiv r - 1 \pmod r \iff q \equiv \frac{r - 1}{2} \pmod r$ (chia 2 được vì $r$ lẻ nên $\gcd(2, r) = 1$) $\implies r \mid p \implies p$ là hợp số!
-    - Chỉ cần gọi **1 lần** `mod_small(q, r)` là sàng đồng thời cả $q$ và $p$, loại bỏ ngay **~98.56%** ứng viên hợp số!
-  - **Dòng 341 (`if (bitsize <= 12 && r >= (1U << (bitsize - 2))) break;`):** Bảo vệ khi test `bitsize` nhỏ (ví dụ $q$ chỉ khoảng 500) để không loại nhầm khi chính $q == r$ (khi đó `q % r == 0` nhưng $q$ lại là số nguyên tố!).
-- **Hàm `miller_rabin_base2(n)` (Dòng 355–391):** Chạy nhanh đúng 1 vòng Miller-Rabin với cơ sở cố định $a = 2$, loại $> 99.99\%$ hợp số còn sót sau sàng.
+    - Nếu $q \bmod r = 0$ ⇒ `r | q` ⇒ `q` là hợp số.
+    - Xét điều kiện `r | p` với $p = 2q + 1$:
+
+$$
+2q + 1 \equiv 0 \pmod r \iff 2q \equiv r - 1 \pmod r \iff q \equiv \frac{r - 1}{2} \pmod r
+$$
+
+    - Phép chia cho 2 hợp lệ vì `r` lẻ nên $\gcd(2, r) = 1$. Chỉ cần gọi **1 lần** `mod_small(q, r)` là sàng đồng thời cả `q` và `p`, loại bỏ ngay **~98.56%** ứng viên hợp số!
+  - **Dòng 341 (`if (bitsize <= 12 && r >= (1U << (bitsize - 2))) break;`):** Bảo vệ khi test `bitsize` nhỏ (ví dụ `q` chỉ khoảng 500) để không loại nhầm khi chính `q == r` (khi đó `q % r == 0` nhưng `q` lại là số nguyên tố!).
+- **Hàm `miller_rabin_base2(n)` (Dòng 355–391):** Chạy nhanh đúng 1 vòng Miller-Rabin với cơ sở cố định `a = 2`, loại `> 99.99%` hợp số còn sót sau sàng.
 - **Hàm `generate_safe_prime(ctx, bitsize, rounds)` (Dòng 411–470) — Kiến trúc lọc 4 tầng:**
   1. **Khởi tạo ứng viên (Dòng 432–433):**
      ```cpp
      big_t q = random_bits(ctx, bitsize - 1);
      q.set_bit(0);
      ```
-     - Vì `q` có đúng `bitsize - 1` bit và lẻ: $2^{\text{bitsize}-2} + 1 \le q \le 2^{\text{bitsize}-1} - 1$.
-     - Do đó $p = 2q + 1 = (q \ll 1) + 1$ thỏa mãn $2^{\text{bitsize}-1} + 3 \le p \le 2^{\text{bitsize}} - 1$ $\Rightarrow$ $p$ **luôn lẻ** và **luôn có chính xác `bitsize` bit** (không bao giờ bị 511 hay 513 bit!).
+     - Gọi `b = bitsize`. Vì `q` có đúng `b - 1` bit và lẻ, ta có $2^{b-2} + 1 \le q \le 2^{b-1} - 1$.
+     - Do đó $p = 2q + 1$ thỏa mãn $2^{b-1} + 3 \le p \le 2^{b} - 1$ ⇒ `p` **luôn lẻ** và **luôn có chính xác `bitsize` bit** (không bao giờ bị 511 hay 513 bit!).
   2. **Tầng 1 (Dòng 436):** `passes_safe_prime_sieve(q, bitsize)` — loại ~98.56% ứng viên.
-  3. **Tầng 2 (Dòng 443):** `miller_rabin_base2(q)` — kiểm tra nhanh 1 vòng cho $q$ (chưa cần tính $p$).
+  3. **Tầng 2 (Dòng 443):** `miller_rabin_base2(q)` — kiểm tra nhanh 1 vòng cho `q` (chưa cần tính `p`).
   4. **Tầng 3 (Dòng 450–451):** Tính `p = (q << 1) + one`, chạy `miller_rabin_base2(p)`.
-  5. **Tầng 4 (Dòng 458–465):** Chỉ khi **cả $q$ và $p$ đều qua hết 3 tầng trên**, mới chạy đủ `rounds` (40) vòng Miller-Rabin ngẫu nhiên cho cả $q$ và $p$ $\Rightarrow$ giảm số lần chạy 40 vòng từ hàng chục lần xuống đúng **1 lần duy nhất** cho mỗi safe prime tìm được!
+  5. **Tầng 4 (Dòng 458–465):** Chỉ khi **cả `q` và `p` đều qua hết 3 tầng trên**, mới chạy đủ `rounds` (40) vòng Miller-Rabin ngẫu nhiên cho cả `q` và `p` ⇒ giảm số lần chạy 40 vòng từ hàng chục lần xuống đúng **1 lần duy nhất** cho mỗi safe prime tìm được!
 - **Hàm `generate_private_key(ctx, p)` (Dòng 473–482):** Gọi `random_range(ctx, 2, p - 2)`.
 - **Số liệu Benchmark thực tế (đã ghi trong báo cáo):**
   - 512-bit: trung bình **~0.26–0.85 s** (~58.000 ứng viên thử, sàng loại **98.56%**).
@@ -681,41 +757,41 @@ return static_cast<uint32_t>(rem);
 ### B. Bộ câu hỏi phản biện & vấn đáp — Phần 2.5
 
 > **Q5.1: Cho một ví dụ số nhỏ minh họa Modulo Bias nếu không dùng Rejection Sampling!**
-> - **Đáp:** Giả sử ta có bộ sinh đều 3 bit (trả về $0..7$, gồm 8 giá trị) và muốn sinh số ngẫu nhiên trong $[0, 4]$ (gồm 5 giá trị). Nếu dùng phép dư `r % 5`:
->   - `0` nhận từ $\{0, 5\}$ (xác suất $2/8 = 25\%$)
->   - `1` nhận từ $\{1, 6\}$ (xác suất $2/8 = 25\%$)
->   - `2` nhận từ $\{2, 7\}$ (xác suất $2/8 = 25\%$)
->   - `3` chỉ nhận từ $\{3\}$ (xác suất $1/8 = 12.5\%$)
->   - `4` chỉ nhận từ $\{4\}$ (xác suất $1/8 = 12.5\%$)
->   Các số `0, 1, 2` xuất hiện **gấp đôi** `3, 4`! Với Rejection Sampling, nếu sinh ra $\{5, 6, 7\}$ ta bỏ sinh lại $\Rightarrow$ mỗi giá trị $0..4$ có xác suất bằng nhau chính xác $1/5 = 20\%$.
+> - **Đáp:** Giả sử ta có bộ sinh đều 3 bit (trả về `0..7`, gồm 8 giá trị) và muốn sinh số ngẫu nhiên trong `[0, 4]` (gồm 5 giá trị). Nếu dùng phép dư `r % 5`:
+>   - `0` nhận từ `{0, 5}` (xác suất `2/8 = 25%`)
+>   - `1` nhận từ `{1, 6}` (xác suất `2/8 = 25%`)
+>   - `2` nhận từ `{2, 7}` (xác suất `2/8 = 25%`)
+>   - `3` chỉ nhận từ `{3}` (xác suất `1/8 = 12.5%`)
+>   - `4` chỉ nhận từ `{4}` (xác suất `1/8 = 12.5%`)
+>   Các số `0, 1, 2` xuất hiện **gấp đôi** `3, 4`! Với Rejection Sampling, nếu sinh ra `{5, 6, 7}` ta bỏ sinh lại ⇒ mỗi giá trị `0..4` có xác suất bằng nhau chính xác `1/5 = 20%`.
 >
 > **Q5.2: Trong `random_range`, vòng lặp `while (true)` có bao giờ chạy quá lâu hoặc lặp vô hạn không?**
-> - **Đáp:** Về lý thuyết xác suất dừng bằng 1, còn trong thực tế vì $k = \text{bit\_length}(\text{range})$ nên $\text{range} + 1 > 2^{k-1}$, xác suất chấp nhận ở mỗi lượt luôn $> 50\%$. Xác suất phải thử quá 100 lần liên tiếp nhỏ hơn $2^{-100} \approx 7.8 \times 10^{-31}$ (bất khả thi), và số lần lặp kỳ vọng luôn $< 2$.
+> - **Đáp:** Về lý thuyết xác suất dừng bằng 1, còn trong thực tế vì `k = range.bit_length()` nên `range + 1 > 2^(k-1)`, xác suất chấp nhận ở mỗi lượt luôn `> 50%`. Xác suất phải thử quá 100 lần liên tiếp nhỏ hơn $2^{-100} \approx 7.8 \times 10^{-31}$ (bất khả thi), và số lần lặp kỳ vọng luôn `< 2`.
 >
 > **Q5.3: Số Carmichael là gì? Tại sao Fermat thất bại trên 561 mà Miller-Rabin lại bắt được?**
-> - **Đáp:** Số Carmichael là hợp số lẻ $n$ thỏa $a^{n-1} \equiv 1 \pmod n$ với mọi $\gcd(a, n) = 1$ (nhỏ nhất là $561 = 3 \times 11 \times 17$). Kiểm tra Fermat chỉ kiểm tra lũy thừa cuối $a^{560} \bmod 561$ nên gần như luôn trả nhầm "nguyên tố". Miller-Rabin phân tích $560 = 2^4 \cdot 35$ ($s = 4, d = 35$). Thử với $a = 2$:
->   - $2^{35} \bmod 561 = 263$ ($\ne 1, \ne 560$)
+> - **Đáp:** Số Carmichael là hợp số lẻ `n` thỏa $a^{n-1} \equiv 1 \pmod n$ với mọi $\gcd(a, n) = 1$ (nhỏ nhất là `561 = 3 × 11 × 17`). Kiểm tra Fermat chỉ kiểm tra lũy thừa cuối $a^{560} \bmod 561$ nên gần như luôn trả nhầm "nguyên tố". Miller-Rabin phân tích $560 = 2^4 \cdot 35$ (`s = 4, d = 35`). Thử với `a = 2`:
+>   - $2^{35} \bmod 561 = 263$ (`≠ 1`, `≠ 560`)
 >   - $263^2 \bmod 561 = 166$
 >   - $166^2 \bmod 561 = 67$
->   - $67^2 \bmod 561 = 1$ $\Rightarrow$ gặp $1$ mà số trước đó là $67 \not\equiv \pm 1 \pmod{561}$! Đây là căn bậc hai không tầm thường của $1$, khẳng định chắc chắn $561$ là hợp số!
+>   - $67^2 \bmod 561 = 1$ ⇒ gặp `1` mà số trước đó là `67` ($67 \not\equiv \pm 1 \pmod{561}$)! Đây là căn bậc hai không tầm thường của `1`, khẳng định chắc chắn `561` là hợp số!
 >
 > **Q5.4: Tại sao không dùng thuật toán tất định AKS (2002) cho đúng 100%, mà lại dùng thuật toán xác suất Miller-Rabin?**
-> - **Đáp:** Dù AKS chứng minh bài toán `PRIMES` thuộc lớp **P** với độ phức tạp $\tilde{O}(\log^6 n)$, nhưng hằng số ẩn cực lớn (phải nhân đa thức bậc hàng triệu trên hệ số lớn), chậm hơn Miller-Rabin ($O(k \log^3 n)$) hàng triệu lần ở kích thước 512–1024 bit. Trong khi đó Miller-Rabin với $k = 40$ có xác suất sai $\le 4^{-40} = 2^{-80}$ (thực tế cho số ngẫu nhiên 512-bit còn $< 2^{-160}$ theo định lý Damgård–Landrock–Pomerance), an toàn tuyệt đối trong thực tế mật mã.
+> - **Đáp:** Dù AKS chứng minh bài toán `PRIMES` thuộc lớp **P** với độ phức tạp $\tilde{O}(\log^6 n)$, nhưng hằng số ẩn cực lớn (phải nhân đa thức bậc hàng triệu trên hệ số lớn), chậm hơn Miller-Rabin (`O(k * log^3 n)`) hàng triệu lần ở kích thước 512–1024 bit. Trong khi đó Miller-Rabin với `k = 40` có xác suất sai $\le 4^{-40} = 2^{-80}$ (thực tế cho số ngẫu nhiên 512-bit còn nhỏ hơn $2^{-160}$ theo định lý Damgård–Landrock–Pomerance), an toàn tuyệt đối trong thực tế mật mã.
 >
 > **Q5.5: Tại sao trong `generate_safe_prime` lại đặt kiểm tra `miller_rabin_base2(q)` trước rồi mới tính `p = 2q + 1` và kiểm tra `p`?**
-> - **Đáp:** Hai lý do: (1) Nếu $q$ đã là hợp số (xác suất > 95% các số lọt qua sàng nhỏ vẫn là hợp số!) thì ta loại ngay mà không cần tốn phép tính tạo $p$ và không cần chạy lũy thừa mô-đun trên $p$; (2) $q$ ít hơn $p$ 1 bit nên tính toán nhanh hơn một chút. Thực tế trên benchmark 512-bit: ~840 ứng viên qua sàng $\rightarrow$ qua `base2(q)` chỉ còn ~34 số $\rightarrow$ qua `base2(p)` chỉ còn đúng **1 số**!
+> - **Đáp:** Hai lý do: (1) Nếu `q` đã là hợp số (xác suất `> 95%` các số lọt qua sàng nhỏ vẫn là hợp số!) thì ta loại ngay mà không cần tốn phép tính tạo `p` và không cần chạy lũy thừa mô-đun trên `p`; (2) `q` ít hơn `p` 1 bit nên tính toán nhanh hơn một chút. Thực tế trên benchmark 512-bit: ~840 ứng viên qua sàng → qua `base2(q)` chỉ còn ~34 số → qua `base2(p)` chỉ còn đúng **1 số**!
 >
 > **Q5.6: Có mẹo nào để `generate_safe_prime` sinh nhanh hơn nữa không (khi mở rộng lên 2048-bit)?**
 > - **Đáp:** Có 3 hướng (nhóm đã phân tích trong Mục 6 báo cáo):
->   1. **Incremental Sieve (Bảng dư bước nhảy $O(1)$):** Thay vì gọi lại `mod_small` cho mọi ứng viên mới, tính bảng dư `rem[i] = q0 % SMALL_PRIMES[i]` một lần rồi tăng $q \leftarrow q + 2$, cập nhật `rem[i] = (rem[i] + 2) % r` chỉ tốn phép cộng!
+>   1. **Incremental Sieve (Bảng dư bước nhảy `O(1)`):** Thay vì gọi lại `mod_small` cho mọi ứng viên mới, tính bảng dư `rem[i] = q0 % SMALL_PRIMES[i]` một lần rồi tăng `q = q + 2`, cập nhật `rem[i] = (rem[i] + 2) % r` chỉ tốn phép cộng!
 >   2. **Song song hóa đa luồng (`std::thread`):** Cho mỗi nhân CPU chạy 1 luồng với seed phân tách miền (domain-separated), luồng nào tìm thấy safe prime trước thì báo các luồng khác dừng.
 >   3. **Phép nhân Montgomery:** Thay phép chia Knuth D trong `modular_exponentiation` bằng rút gọn Montgomery (chỉ dùng phép nhân và dịch bit).
 >
-> **Q5.7: Đẳng thức sàng đồng thời $q \equiv (r - 1)/2 \pmod r$ có dùng được cho $r = 2$ không?**
-> - **Đáp:** Không cần và không dùng cho $r = 2$, vì ta đã chủ động ép `q` lẻ (`q.set_bit(0)`) nên $q$ luôn không chia hết cho 2, và $p = 2q + 1$ đương nhiên luôn lẻ. Bảng `SMALL_PRIMES` của nhóm bắt đầu từ `3`, mọi $r$ đều lẻ nên $(r - 1)/2$ luôn là số nguyên chính xác!
+> **Q5.7: Đẳng thức sàng đồng thời $q \equiv (r - 1)/2 \pmod r$ có dùng được cho `r = 2` không?**
+> - **Đáp:** Không cần và không dùng cho `r = 2`, vì ta đã chủ động ép `q` lẻ (`q.set_bit(0)`) nên `q` luôn không chia hết cho 2, và `p = 2q + 1` đương nhiên luôn lẻ. Bảng `SMALL_PRIMES` của nhóm bắt đầu từ `3`, mọi `r` đều lẻ nên `(r - 1)/2` luôn là số nguyên chính xác!
 >
-> **Q5.8: Nếu chỉ biết $q \equiv 2 \pmod 3$, thì $p = 2q + 1$ chia hết cho 3 phải không? Áp dụng vào công thức sàng thế nào?**
-> - **Đáp:** Với $r = 3$, $(r - 1)/2 = 1$. Khi $q \equiv 1 \pmod 3$ thì $2q + 1 \equiv 2(1) + 1 = 3 \equiv 0 \pmod 3 \Rightarrow 3 \mid p$, bị loại! Khi $q \equiv 0 \pmod 3 \Rightarrow 3 \mid q$, cũng bị loại! Vậy mọi cặp $(q, p)$ với $q > 3$ **bắt buộc phải thỏa $q \equiv 2 \pmod 3$** (suy ra $p = 2q + 1 \equiv 5 \equiv 2 \pmod 3$, và kết hợp $q$ lẻ $\Rightarrow q \equiv 5 \pmod 6$, $p \equiv 11 \pmod{12}$!). Công thức tổng quát của nhóm đã tự động bao hàm quy luật này cho cả 302 số nguyên tố lẻ $< 2000$!
+> **Q5.8: Nếu chỉ biết $q \equiv 2 \pmod 3$, thì `p = 2q + 1` có chia hết cho 3 không? Áp dụng vào công thức sàng thế nào?**
+> - **Đáp:** Với `r = 3`, `(r - 1)/2 = 1`. Khi $q \equiv 1 \pmod 3$ thì $2q + 1 \equiv 3 \equiv 0 \pmod 3$ ⇒ `3 | p`, bị loại! Khi $q \equiv 0 \pmod 3$ ⇒ `3 | q`, cũng bị loại! Vậy mọi cặp `(q, p)` với `q > 3` **bắt buộc phải thỏa** $q \equiv 2 \pmod 3$ (suy ra $p = 2q + 1 \equiv 2 \pmod 3$, và kết hợp `q` lẻ ⇒ $q \equiv 5 \pmod 6$, $p \equiv 11 \pmod{12}$!). Công thức tổng quát của nhóm đã tự động bao hàm quy luật này cho cả 302 số nguyên tố lẻ `< 2000`!
 
 ---
 
@@ -740,7 +816,7 @@ return static_cast<uint32_t>(rem);
 - **Dòng 126–198 (5 bước trao đổi khóa + 4 chốt kiểm tra phòng thủ):**
   - **Bước `[1]` (Dòng 126–138):** Sinh `p = generate_safe_prime(&ctx, bit_size, rounds)`, đo thời gian bằng `std::chrono::high_resolution_clock`. **Chốt kiểm tra 1:** `p.bit_length() == bit_size && p.is_odd()`.
   - **Bước `[2]` (Dòng 140–150):** Chọn `g = choose_generator(p)`, tính `q = (p - 1) >> 1`. **Chốt kiểm tra 2:** `g != 1 && g^q mod p == 1`.
-  - **Bước `[3]` (Dòng 153–157):** Sinh khóa bí mật `a, b = generate_private_key(&ctx, p)` trong $[2, p-2]$.
+  - **Bước `[3]` (Dòng 153–157):** Sinh khóa bí mật `a, b = generate_private_key(&ctx, p)` trong `[2, p - 2]`.
   - **Bước `[4]` (Dòng 160–176):** Tính `A = g^a mod p`, `B = g^b mod p`, đo thời gian. **Chốt kiểm tra 3:** `is_valid_public_value(A, p) && is_valid_public_value(B, p)`.
   - **Bước `[5]` (Dòng 179–198):** Tính `s_alice = B^a mod p`, `s_bob = A^b mod p`, đo thời gian. **Chốt kiểm tra 4:** `matched = (s_alice == s_bob) && (s_alice > 1)`.
 
@@ -749,8 +825,8 @@ return static_cast<uint32_t>(rem);
 > **Q6.1: Tại sao ở dòng 192 lại kiểm tra `(s_alice == s_bob) && (s_alice > big_t::from_u64(1))` mà không chỉ kiểm tra `s_alice == s_bob`?**
 > - **Đáp:** Để phòng trường hợp hàm `modular_exponentiation` hoặc `generate_safe_prime` chưa cài đặt (trả về `0` hoặc `1`) dẫn đến `0 == 0` hoặc `1 == 1` mà vẫn báo thành công giả (false positive), đồng thời loại trừ trường hợp bí mật chung bị suy biến về phần tử đơn vị `1`.
 >
-> **Q6.2: Chạy chương trình với `--seed` cố định hai lần có ra cùng $p, a, b, s$ không? Khi nào nên và không nên dùng `--seed`?**
-> - **Đáp:** Ra kết quả **giống hệt nhau từng bit**, vì SHAKE128 là hàm tất định (cùng seed $\Rightarrow$ cùng dòng byte đầu ra). Chế độ `--seed` chỉ dùng để **gỡ lỗi, kiểm thử chéo và tái hiện kết quả** (đề bài cho phép); trong môi trường thực tế tuyệt đối không được dùng seed cố định mà phải lấy từ `randombytes()` của hệ điều hành.
+> **Q6.2: Chạy chương trình với `--seed` cố định hai lần có ra cùng `p, a, b, s` không? Khi nào nên và không nên dùng `--seed`?**
+> - **Đáp:** Ra kết quả **giống hệt nhau từng bit**, vì SHAKE128 là hàm tất định (cùng seed ⇒ cùng dòng byte đầu ra). Chế độ `--seed` chỉ dùng để **gỡ lỗi, kiểm thử chéo và tái hiện kết quả** (đề bài cho phép); trong môi trường thực tế tuyệt đối không được dùng seed cố định mà phải lấy từ `randombytes()` của hệ điều hành.
 >
 > **Q6.3: Tại sao phải truyền `static_cast<unsigned char>(fixed_seed_hex[k])` vào `std::isxdigit` ở dòng 75?**
 > - **Đáp:** Theo chuẩn C/C++, hàm `<cctype>` như `std::isxdigit(int ch)` yêu cầu giá trị `ch` phải biểu diễn được bởi `unsigned char` hoặc bằng `EOF`. Nếu người dùng gõ ký tự có dấu tiếng Việt vào `--seed`, kiểu `char` có dấu trên Windows sẽ mang giá trị âm, truyền thẳng vào `isxdigit` sẽ gây **Undefined Behavior** (thậm chí crash trên MSVC debug).
@@ -764,19 +840,19 @@ return static_cast<uint32_t>(rem);
 | # | Yêu cầu đột xuất của thầy | Cách xử lý nhanh, chuẩn xác ngay tại chỗ |
 | :--- | :--- | :--- |
 | **1** | *"Em chạy thử sinh số nguyên tố 1024-bit cho thầy xem."* | Chạy ngay: `.\dh.exe --bits 1024 --rounds 40` (không cần sửa code, chạy trong ~2–5 giây). |
-| **2** | *"Em sửa code để sinh được số 2048-bit xem nào?"* | Mở `bigint.cpp` dòng 183, đổi `MAX_PRIME_BITS = 1024` $\rightarrow$ `2048`, biên dịch lại bằng `g++ -std=c++14 -O2 -o dh.exe main.cpp`, rồi chạy `.\dh.exe --bits 2048`. *(Lưu ý nói trước với thầy: 2048-bit trên 1 luồng sẽ mất khoảng vài chục giây đến ~1–2 phút vì mật độ safe prime giảm theo $O(1/\ln^2 p)$).* |
-| **3** | *"Em in thêm số nguyên tố Sophie Germain $q$ và chứng minh $p = 2q + 1$ có thật sự là số nguyên tố không?"* | Trong `main.cpp` ngay sau dòng 142 (`big_t q = (p - big_t::from_u64(1)) >> 1;`), thêm:<br>`std::cout << "    q = " << q.to_hex() << " (" << q.bit_length() << " bit)\n";`<br>`std::cout << "    MR(q)=" << is_probable_prime(&ctx, q, 40) << ", MR(p)=" << is_probable_prime(&ctx, p, 40) << "\n";` |
-| **4** | *"Nếu thầy sửa `B` thành `p - 1` ngay trước bước kiểm tra thì chương trình em phản ứng sao?"* | Trong `main.cpp` dòng 169, tạm gán `B = p - big_t::from_u64(1);` rồi chạy lại $\rightarrow$ `is_valid_public_value(B, p)` lập tức phát hiện `SAI` và dừng chương trình với mã lỗi `1`, ngăn tính bí mật chung không an toàn! *(Xong nhớ Ctrl+Z trả lại như cũ).* |
-| **5** | *"Chứng minh Miller-Rabin của em bắt được số Carmichael 561 xem nào?"* | Nếu thầy cho mở repo test, chạy `tests/test_prng_prime.exe` (đã test sẵn 561, 1105, 1729, 2465, 2821, 6601, 41041 và số Mersenne nguyên tố $2^{127}-1$). Hoặc thêm 1 dòng nhanh trong `main.cpp`: `std::cout << is_probable_prime(&ctx, big_t::from_u64(561), 40);` $\rightarrow$ in `0` (`false`). |
+| **2** | *"Em sửa code để sinh được số 2048-bit xem nào?"* | Mở `bigint.cpp` dòng 183, đổi `MAX_PRIME_BITS = 1024` → `2048`, biên dịch lại bằng `g++ -std=c++14 -O2 -o dh.exe main.cpp`, rồi chạy `.\dh.exe --bits 2048`. *(Lưu ý nói trước với thầy: 2048-bit trên 1 luồng sẽ mất khoảng vài chục giây đến ~1–2 phút vì mật độ safe prime giảm theo tỉ lệ nghịch bình phương logarit).* |
+| **3** | *"Em in thêm số nguyên tố Sophie Germain `q` và chứng minh `p = 2q + 1` có thật sự là số nguyên tố không?"* | Trong `main.cpp` ngay sau dòng 142 (`big_t q = (p - big_t::from_u64(1)) >> 1;`), thêm:<br>`std::cout << "    q = " << q.to_hex() << " (" << q.bit_length() << " bit)\n";`<br>`std::cout << "    MR(q)=" << is_probable_prime(&ctx, q, 40) << ", MR(p)=" << is_probable_prime(&ctx, p, 40) << "\n";` |
+| **4** | *"Nếu thầy sửa `B` thành `p - 1` ngay trước bước kiểm tra thì chương trình em phản ứng sao?"* | Trong `main.cpp` dòng 169, tạm gán `B = p - big_t::from_u64(1);` rồi chạy lại → `is_valid_public_value(B, p)` lập tức phát hiện `SAI` và dừng chương trình với mã lỗi `1`, ngăn tính bí mật chung không an toàn! *(Xong nhớ Ctrl+Z trả lại như cũ).* |
+| **5** | *"Chứng minh Miller-Rabin của em bắt được số Carmichael 561 xem nào?"* | Nếu thầy cho mở repo test, chạy `tests/test_prng_prime.exe` (đã test sẵn 561, 1105, 1729, 2465, 2821, 6601, 41041 và số Mersenne nguyên tố $2^{127}-1$). Hoặc thêm 1 dòng nhanh trong `main.cpp`: `std::cout << is_probable_prime(&ctx, big_t::from_u64(561), 40);` → in `0` (`false`). |
 | **6** | *"Nếu thầy muốn chuyển sang in kết quả hệ thập phân thay vì hệ hex?"* | Đổi `.to_hex()` thành `.to_dec()` (hàm `to_dec()` nhóm đã cài sẵn tối ưu chia cho $10^{18}$ trong `bigint.cpp` dòng 101–128!). |
 
 ---
 
 ### Lời khuyên tâm lý cho buổi vấn đáp
+
 1. **Bình tĩnh, trả lời thẳng vào trọng tâm (3 câu ngắn: Cái gì → Tại sao → Ở đâu trong code)** trước khi mở rộng thêm chi tiết.
 2. **Đừng ngại mở code chỉ trực tiếp:** Khi thầy hỏi một cơ chế (như Knuth D, Rejection Sampling, sàng đồng thời), hãy vừa nói vừa bấm sang đúng file/dòng trong VS Code để chỉ — thầy đánh giá rất cao sinh viên thuộc vị trí code của mình.
 3. **Nắm chắc số liệu thực nghiệm trong báo cáo** (512-bit ~0.26–0.85s, sàng loại 98.56%, Knuth D nhanh hơn chia nhị phân ~160 lần: 0.44 µs vs 72 µs, `modexp` 512-bit ~0.24 ms, crosscheck 30.000 + 50.016 phép chia + 4.452 lũy thừa với Python 0 sai lệch) để dẫn chứng thuyết phục.
 4. **Nếu gặp câu hỏi mở rộng chưa cài** (như Montgomery Multiplication, Montgomery Ladder, đa luồng `std::thread`, Baillie–PSW), trả lời thẳng thắn: *"Hiện tại chương trình chưa cài phần này và nhóm đã tự phân tích rõ trong Mục 6 — Hạn chế và Hướng cải thiện của báo cáo, cụ thể hướng làm sẽ là..."* — cách trả lời này thể hiện tư duy kỹ thuật chín chắn và trung thực.
 
 **Chúc bạn và Nhóm 18 vấn đáp thật tự tin và đạt điểm tối đa!**
-
