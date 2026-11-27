@@ -21,6 +21,13 @@
   - [2.5. Module `prime.cpp` — Rejection Sampling, Miller-Rabin & Sinh Safe Prime 4 tầng](#25-module-primecpp--rejection-sampling-miller-rabin--sinh-safe-prime-4-tầng)
   - [2.6. Module `main.cpp` — Điều phối Chương trình & Giao diện CLI](#26-module-maincpp--điều-phối-chương-trình--giao-diện-cli)
   - [2.7. Tình huống Live-Coding & Hỏi xoáy tổng hợp tại chỗ](#27-tình-huống-live-coding--hỏi-xoáy-tổng-hợp-tại-chỗ)
+- [PHẦN 3: GIẢI THÍCH TỪNG DÒNG CODE CHI TIẾT CỦA TOÀN BỘ 6 FILE MÃ NGUỒN](#phần-3-giải-thích-từng-dòng-code-chi-tiết-của-toàn-bộ-6-file-mã-nguồn)
+  - [3.1. File `fips202.cpp` (850 dòng) — Lõi Keccak / SHA-3 / SHAKE128](#31-file-fips202cpp-850-dòng--lõi-keccak--sha-3--shake128)
+  - [3.2. File `prng.cpp` (129 dòng) — CSPRNG & Nguồn Entropy OS](#32-file-prngcpp-129-dòng--csprng--nguồn-entropy-os)
+  - [3.3. File `bigint.cpp` (509 dòng) — Hệ thống Số lớn & Chia Knuth Algorithm D](#33-file-bigintcpp-509-dòng--hệ-thống-số-lớn--chia-knuth-algorithm-d)
+  - [3.4. File `dh.cpp` (170 dòng) — Số học Mô-đun & Trao đổi khóa Diffie-Hellman](#34-file-dhcpp-170-dòng--số-học-mô-đun--trao-đổi-khóa-diffie-hellman)
+  - [3.5. File `prime.cpp` (484 dòng) — Rejection Sampling, Miller-Rabin & Sinh Safe Prime](#35-file-primecpp-484-dòng--rejection-sampling-miller-rabin--sinh-safe-prime)
+  - [3.6. File `main.cpp` (201 dòng) — Chương trình chính & Giao diện CLI](#36-file-maincpp-201-dòng--chương-trình-chính--giao-diện-cli)
 
 ---
 
@@ -856,3 +863,417 @@ $$
 4. **Nếu gặp câu hỏi mở rộng chưa cài** (như Montgomery Multiplication, Montgomery Ladder, đa luồng `std::thread`, Baillie–PSW), trả lời thẳng thắn: *"Hiện tại chương trình chưa cài phần này và nhóm đã tự phân tích rõ trong Mục 6 — Hạn chế và Hướng cải thiện của báo cáo, cụ thể hướng làm sẽ là..."* — cách trả lời này thể hiện tư duy kỹ thuật chín chắn và trung thực.
 
 **Chúc bạn và Nhóm 18 vấn đáp thật tự tin và đạt điểm tối đa!**
+
+---
+
+# PHẦN 3: GIẢI THÍCH TỪNG DÒNG CODE CHI TIẾT CỦA TOÀN BỘ 6 FILE MÃ NGUỒN
+
+Phần này đi qua **từng dòng / từng câu lệnh theo đúng thứ tự từ dòng 1 đến dòng cuối** của toàn bộ 6 file trong `project_01_source/`. Khi vấn đáp, thầy chỉ bất kỳ dòng nào trong bất kỳ file nào, bạn chỉ cần tra đúng số dòng dưới đây là giải thích trôi chảy ngay lập tức.
+
+---
+
+## 3.1. File `fips202.cpp` (850 dòng) — Lõi Keccak / SHA-3 / SHAKE128
+
+*(Gộp nguyên văn từ `fips202.h` + `fips202.c` trong bộ mã nguồn mẫu Kyber/PQ-Crystals giảng viên cung cấp — KHÔNG chỉnh sửa thuật toán, chỉ gộp để đáp ứng quy định chỉ nộp `.cpp`.)*
+
+### Phần Header gộp (Dòng 1–74)
+- **`Dòng 7–8` (`#ifndef FIPS202_CPP` / `#define FIPS202_CPP`):** Include guard cho mô hình Unity Build, đảm bảo nếu nhiều file `.cpp` cùng `#include "fips202.cpp"` thì nội dung chỉ được nạp đúng 1 lần.
+- **`Dòng 11–12` (`#ifndef FIPS202_H` / `#define FIPS202_H`):** Include guard gốc của file header `fips202.h`.
+- **`Dòng 14–15` (`#include <stddef.h>`, `#include <stdint.h>`):** Nạp các kiểu chuẩn `size_t`, `uint8_t`, `uint64_t`.
+- **`Dòng 17–19` và `69–71` (`#ifdef __cplusplus extern "C" { ... }`):** Bảo trình biên dịch C++ giữ quy ước đặt tên hàm (linkage) kiểu C (không name-mangling) cho các hàm FIPS 202.
+- **`Dòng 21–24` (Các hằng số `RATE` tính bằng byte):**
+  - `SHAKE128_RATE = 168` byte (`1344` bit) ⇒ `capacity = 1600 - 1344 = 256` bit (bảo mật 128-bit).
+  - `SHAKE256_RATE = 136` byte (`1088` bit) ⇒ `capacity = 512` bit (bảo mật 256-bit).
+  - `SHA3_256_RATE = 136` byte; `SHA3_512_RATE = 72` byte (`576` bit, `capacity = 1024` bit).
+- **`Dòng 26` (`#define FIPS202_NAMESPACE(s) pqcrystals_kyber_fips202_ref_##s`):** Macro gắn tiền tố namespace vào tên hàm để tránh đụng độ tên với các thư viện khác.
+- **`Dòng 28–32` (`typedef struct { uint64_t s[25]; unsigned int pos; } keccak_state;`):**
+  - `s[25]`: Ma trận trạng thái 3 chiều `5 × 5 × 64 = 1600` bit (200 byte) của Keccak.
+  - `pos`: Con trỏ byte hiện tại trong vùng `rate` (`0 .. r`), cho biết đã hấp thụ (absorb) hoặc vắt (squeeze) tới byte nào của block hiện hành.
+- **`Dòng 34–67`:** Khai báo nguyên mẫu hàm (prototype) cho nhóm API tăng dần (`init`, `absorb`, `finalize`, `squeeze`, `absorb_once`, `squeezeblocks`) của `shake128`, `shake256`, và API một lần của `shake128`, `shake256`, `sha3_256`, `sha3_512`.
+
+### Tiện ích nạp/xuất 64-bit & Hằng số vòng (Dòng 81–147)
+- **`Dòng 84` (`#define NROUNDS 24`):** Keccak-f[1600] chạy cố định **24 vòng** hoán vị.
+- **`Dòng 85` (`#define ROL(a, offset) ((a << offset) ^ (a >> (64-offset)))`):** Phép **xoay vòng trái bit** (Rotate Left) trên thanh ghi `uint64_t`. Dịch trái `offset` bit rồi XOR (tương đương OR vì 2 phần bit không chồng nhau) với `offset` bit cao bị đẩy vòng sang phải.
+- **`Dòng 96–104` (`load64(const uint8_t x[8])`):** Ghép 8 byte liên tiếp thành 1 số `uint64_t` theo thứ tự **Little-Endian**: `r |= (uint64_t)x[i] << 8*i`.
+- **`Dòng 114–119` (`store64(uint8_t x[8], uint64_t u)`):** Tách 1 số `uint64_t` thành 8 byte Little-Endian: `x[i] = u >> 8*i` (phép gán vào `uint8_t` tự cắt lấy 8 bit thấp nhất).
+- **`Dòng 122–147` (`KeccakF_RoundConstants[24]`):** 24 hằng số vòng 64-bit sinh từ thanh ghi dịch phản hồi tuyến tính LFSR theo chuẩn NIST FIPS 202, dùng trong bước $\iota$ (Iota) để phá vỡ tính đối xứng giữa các vòng và các lane.
+
+### Hoán vị lõi `KeccakF1600_StatePermute(uint64_t state[25])` (Dòng 156–418)
+- **`Dòng 160–171`:** Khai báo 25 biến cục bộ `Aba..Asu` (biểu diễn ma trận 5×5 hiện tại), 25 biến `Eba..Esu` (ma trận 5×5 sau 1 vòng), 5 biến `BCa..BCu` (tổng XOR cột / giá trị trung gian), và 5 biến `Da..Du` (hiệu ứng cột $\theta$). Để tất cả trong biến cục bộ giúp trình biên dịch giữ chúng trên thanh ghi CPU thay vì truy cập RAM liên tục.
+- **`Dòng 174–198` (`copyFromState`):** Nạp 25 phần tử `state[0..24]` vào 25 biến thanh ghi `Aba..Asu`.
+- **`Dòng 200–390` (Vòng lặp `for (round = 0; round < NROUNDS; round += 2)` — Kỹ thuật Loop Unrolling 2 vòng/lượt):**
+  - Chạy **2 vòng liền nhau trong mỗi lượt** (vòng chẵn `round` biến đổi `A -> E`, vòng lẻ `round + 1` biến đổi `E -> A`), giúp loại bỏ hoàn toàn bước copy ngược `E -> A` sau mỗi vòng!
+  - **Trong mỗi vòng (VD dòng 202–294 cho vòng `round`, và dòng 297–389 cho vòng `round + 1`):** thực hiện gộp 5 bước chuẩn Keccak ($\theta, \rho, \pi, \chi, \iota$):
+    1. **Bước $\theta$ (Theta — Dòng 202–213):** Tính parity (XOR) của từng cột (`BCa..BCu`), sau đó tính `Da = BCu ^ ROL(BCe, 1)` (tương tự `De..Du`) rồi XOR vào từng lane (VD `Aba ^= Da`). Tác dụng: khuếch tán tuyến tính giữa các cột.
+    2. **Bước $\rho$ (Rho) & $\pi$ (Pi — Dòng 215–224, 232–241, ...):** Xoay vòng bit từng lane theo các hằng số góc chuẩn (`44, 43, 21, 14, 28, 20, ...`) bằng `ROL(...)` đồng thời hoán vị vị trí lane sang hàng/cột mới (gộp trực tiếp khi gán vào `BCa..BCu`). Tác dụng: khuếch tán mạnh giữa các bit và các lane.
+    3. **Bước $\chi$ (Chi — Dòng 225, 227–230, ...):** Phép biến đổi **phi tuyến duy nhất** của Keccak: `Eba = BCa ^ ((~BCe) & BCi)` (tương đương lật bit nếu 2 bit lân cận là `0` và `1`). Tác dụng: tạo tính phi tuyến chống thám mã tuyến tính và vi sai.
+    4. **Bước $\iota$ (Iota — Dòng 226 và dòng 321):** XOR `KeccakF_RoundConstants[round]` vào lane đầu tiên `(0, 0)` (`Eba` ở vòng chẵn, `Aba` ở vòng lẻ) để phá vỡ tính đối xứng vòng.
+- **`Dòng 393–417` (`copyToState`):** Ghi 25 thanh ghi `Aba..Asu` trở lại mảng `state[0..24]`.
+
+### Cơ chế Sponge: Init, Absorb, Finalize, Squeeze (Dòng 427–588)
+- **`Dòng 427–432` (`keccak_init`):** Khởi tạo `s[0..24] = 0`.
+- **`Dòng 447–467` (`keccak_absorb` — hấp thụ tăng dần):**
+  - `Dòng 455–461`: Khi dữ liệu còn lại `pos + inlen >= r` (đủ lấp đầy 1 block `r` byte), XOR từng byte vào `s[i/8]` ở vị trí byte `8 * (i % 8)`, giảm `inlen -= r - pos`, gọi `KeccakF1600_StatePermute(s)` để trộn toàn trạng thái, rồi đặt lại `pos = 0`.
+  - `Dòng 463–466`: Phần dữ liệu lẻ chưa đủ 1 block được XOR tiếp từ `pos` đến `pos + inlen`, trả về vị trí `pos` mới.
+- **`Dòng 479–483` (`keccak_finalize` — đệm pad10*1):**
+  - `Dòng 481`: XOR byte phân tách miền `p` (`0x1F` cho SHAKE, `0x06` cho SHA-3) vào ngay sau byte dữ liệu cuối tại `pos`.
+  - `Dòng 482`: XOR bit cao nhất của byte cuối vùng rate (`s[r/8 - 1] ^= 1ULL << 63`) để đóng khung padding `10*1`.
+- **`Dòng 500–520` (`keccak_squeeze` — vắt byte ngẫu nhiên tăng dần):**
+  - `Dòng 508`: Lặp khi vẫn còn byte cần xuất (`while (outlen)`).
+  - `Dòng 509–512`: Nếu `pos == r` (đã vắt hết `r` byte của block hiện tại, hoặc mới `finalize` xong), gọi `KeccakF1600_StatePermute(s)` tạo block 168 byte mới và reset `pos = 0`.
+  - `Dòng 513–516`: Đọc từng byte `s[i/8] >> 8*(i%8)` ghi vào `*out++` cho đến khi hết block `r` hoặc đủ `outlen`; cập nhật `outlen` và `pos`.
+- **`Dòng 535–588` (`keccak_absorb_once`, `keccak_squeezeblocks`):** Phiên bản không tăng dần (hấp thụ toàn bộ input 1 lần và vắt theo từng khối `r` byte hoàn chỉnh).
+
+### Các hàm bao ngoài (Wrapper API) (Dòng 597–850)
+- **`Dòng 597–643` (`shake128_init`, `shake128_absorb`, `shake128_finalize`, `shake128_squeeze`):** Các hàm **được `prng.cpp` gọi trực tiếp**:
+  - `shake128_init` (597–601): gọi `keccak_init(state->s)` và `state->pos = 0`.
+  - `shake128_absorb` (612–615): gọi `keccak_absorb` với `SHAKE128_RATE = 168`.
+  - `shake128_finalize` (624–628): gọi `keccak_finalize(..., 0x1F)` và đặt `state->pos = SHAKE128_RATE` để lần `squeeze` đầu tiên lập tức hoán vị `KeccakF1600`.
+  - `shake128_squeeze` (640–643): gọi `keccak_squeeze` với `SHAKE128_RATE = 168`.
+- **`Dòng 654–848`:** Các wrapper tương ứng cho `shake128_absorb_once`, `shake128_squeezeblocks`, họ `shake256_*` (`rate = 136`, domain `0x1F`), `sha3_256` (`rate = 136`, domain `0x06`, xuất 32 byte), `sha3_512` (`rate = 72`, domain `0x06`, xuất 64 byte). Giữ nguyên đầy đủ từ thư viện chuẩn của giảng viên.
+- **`Dòng 850` (`#endif // FIPS202_CPP`):** Đóng include guard.
+
+---
+
+## 3.2. File `prng.cpp` (129 dòng) — CSPRNG & Nguồn Entropy OS
+
+*(Gộp từ `prng.h` + `prng.cpp` mẫu, được Minh port sang Windows và vá 2 lỗi quan trọng.)*
+
+### Include Guard, Khai báo Windows `rand_s` & Thư viện (Dòng 14–40)
+- **`Dòng 14–15` (`#ifndef PRNG_CPP` / `#define PRNG_CPP`):** Include guard Unity Build.
+- **`Dòng 17–27` (Khối `#ifdef _WIN32`):**
+  - `Dòng 18–20`: Nếu chưa định nghĩa `_CRT_RAND_S` thì định nghĩa để kích hoạt `rand_s` trong CRT Windows.
+  - `Dòng 21`: Nạp `<stdlib.h>`.
+  - `Dòng 22–26`: Khai báo tường minh `extern "C" _CRTIMP int __cdecl rand_s(unsigned int*);` (nếu `_CRTIMP` có định nghĩa, khớp với `dllimport` của MinGW-w64 UCRT, tránh cảnh báo `redeclared without dllimport attribute`; nhánh `#else` khai báo không có `_CRTIMP`). Đoạn này đảm bảo dù file gọi có `#include <iostream>` trước `prng.cpp`, trình biên dịch vẫn luôn thấy `rand_s`.
+- **`Dòng 29–33`:** Nạp các header C chuẩn: `<stdint.h>`, `<stddef.h>`, `<stdlib.h>`, `<stdio.h>` (cho `fprintf`), `<errno.h>` (cho `EINTR` trên Linux).
+- **`Dòng 35–37` (`#ifndef _WIN32 #include <sys/random.h> #endif`):** Trên Linux/macOS, nạp `<sys/random.h>` để dùng syscall `getrandom()`.
+- **`Dòng 39` (`#include "fips202.cpp"`):** Nạp lõi Keccak/SHAKE128.
+
+### Cấu trúc dữ liệu & Khai báo hàm (Dòng 42–51)
+- **`Dòng 42–45` (`typedef struct { keccak_state sponge; } prng_ctx;`):** Ngữ cảnh bộ sinh số ngẫu nhiên — bọc trọn 1 trạng thái `keccak_state` (200 byte + `pos`). Dùng struct giúp hỗ trợ nhiều luồng/ngữ cảnh PRNG độc lập nếu mở rộng đa luồng.
+- **`Dòng 47–51`:** Prototype 5 hàm công khai: `randombytes`, `prng_seed`, `prng_next_u16`, `prng_next_u32`, `prng_next_u64`.
+
+### Hàm `randombytes(uint8_t *out, size_t outlen)` (Dòng 58–90)
+- **`Dòng 58`:** Nhận con trỏ buffer đầu ra `out` và độ dài `outlen` (đã sửa từ `uint8_t` của mẫu sang `size_t` để không bị trần 255 byte).
+- **Nhánh Windows (`#ifdef _WIN32`, Dòng 60–76):**
+  - `Dòng 61`: Lặp cho đến khi ghi đủ `outlen` byte (`while (outlen > 0)`).
+  - `Dòng 63–68`: Khởi tạo `unsigned int r = 0;`, gọi `rand_s(&r)` (bên dưới gọi `RtlGenRandom` của nhân Windows). Nếu trả về khác `0` (lỗi lấy entropy OS), in thông báo ra `stderr` và gọi `abort()` ngay lập tức (nguyên tắc **fail-closed**: thà dừng chương trình còn hơn sinh khóa từ entropy rỗng!).
+  - `Dòng 69`: Tính số byte cần chép trong lượt này: `chunk = (outlen < sizeof(r)) ? outlen : sizeof(r)` (tối đa 4 byte, xử lý gọn trường hợp `outlen` không chia hết cho 4).
+  - `Dòng 70–73`: Tách từng byte của `r` theo Little-Endian `(r >> (8 * i)) & 0xFFU` ghi vào `out[i]`.
+  - `Dòng 74–75`: Dịch con trỏ `out += chunk` và giảm `outlen -= chunk`.
+- **Nhánh Linux/macOS (`#else`, Dòng 77–89):**
+  - `Dòng 78–81`: Lặp `while (outlen > 0)`, gọi `ret = getrandom(out, outlen, 0)` (cờ `0` dùng `/dev/urandom` CSPRNG của nhân, tự chờ nếu bể entropy chưa khởi tạo xong lúc boot).
+  - `Dòng 82–83`: Nếu bị tín hiệu hệ thống ngắt (`ret == -1 && errno == EINTR`), quay lại gọi tiếp `continue`.
+  - `Dòng 84–85`: Nếu lỗi nghiêm trọng khác (`ret < 0`), gọi `abort()`.
+  - `Dòng 86–87`: Tịnh tiến `out += ret` và giảm `outlen -= ret` (vì `getrandom` có thể trả về ít hơn `outlen` byte trong 1 lần gọi).
+
+### Các hàm khởi tạo & sinh số nguyên ngẫu nhiên (Dòng 92–129)
+- **`Dòng 92–97` (`prng_seed`):**
+  - `Dòng 94`: `shake128_init(&ctx->sponge)` — xóa trắng trạng thái 1600 bit.
+  - `Dòng 95`: `shake128_absorb(&ctx->sponge, seed, seedlen)` — hấp thụ toàn bộ `seed` (32 byte = 256 bit).
+  - `Dòng 96`: `shake128_finalize(&ctx->sponge)` — đóng pha hấp thụ, sẵn sàng vắt byte ngẫu nhiên.
+- **`Dòng 99–105` (`prng_next_u16`):**
+  - `Dòng 101–102`: Vắt 2 byte vào `uint8_t buf[2]` bằng `shake128_squeeze`.
+  - `Dòng 103–104`: Ép kiểu từng byte sang `uint16_t` rồi ghép Little-Endian `buf[0] | (buf[1] << 8)`.
+- **`Dòng 107–115` (`prng_next_u32`):**
+  - `Dòng 109–110`: Vắt 4 byte vào `buf[4]`.
+  - `Dòng 111–114`: **Quan trọng** — ép tường minh `static_cast<uint32_t>(buf[i])` **trước** khi dịch trái `8, 16, 24` bit để loại bỏ Undefined Behavior tràn bit dấu `int` 32-bit ở code mẫu gốc.
+- **`Dòng 117–127` (`prng_next_u64`):**
+  - `Dòng 119–120`: Vắt 8 byte vào `buf[8]`.
+  - `Dòng 121–126`: Khởi tạo `uint64_t ret = 0`, lặp `i = 0..7` ghép `ret |= static_cast<uint64_t>(buf[i]) << (8 * i)` và trả về `ret`. Đây là hàm được `prime.cpp` gọi trực tiếp để đổ dữ liệu vào từng limb 64-bit của `big_t`.
+- **`Dòng 129` (`#endif // PRNG_CPP`):** Đóng include guard.
+
+---
+
+## 3.3. File `bigint.cpp` (509 dòng) — Hệ thống Số lớn & Chia Knuth Algorithm D
+
+*(Khang phụ trách dòng 1–348; Mạnh phụ trách phần chia Knuth D dòng 350–506.)*
+
+### Phần 1: Định nghĩa kiểu & Constructor (Dòng 13–33)
+- **`Dòng 13–14`:** Include guard `BIGINT_CPP`.
+- **`Dòng 16–19`:** Nạp `<stdint.h>`, `<stddef.h>`, `<stdio.h>` (cho `std::snprintf`), `<string>` (cho `std::string`).
+- **`Dòng 21` (`__extension__ typedef unsigned __int128 uint128_t;`):** Định nghĩa kiểu 128-bit không dấu nội tại của GCC/Clang; `__extension__` triệt tiêu cảnh báo `-Wpedantic`.
+- **`Dòng 23–26` (`template <size_t N> struct uint_t { uint64_t digits[N]; ... };`):** Struct template cấp phát tĩnh `N` limb 64-bit trên Stack theo thứ tự Little-Endian (`digits[0]` thấp nhất).
+- **`Dòng 29–33` (`uint_t()`):** Constructor mặc định gán toàn bộ `digits[0..N-1] = 0` để tránh rác bộ nhớ.
+
+### Phần 2: Khởi tạo & Chuyển đổi I/O (Dòng 36–128)
+- **`Dòng 36–41` (`from_u64(uint64_t v)`):** Tạo `uint_t r` (mọi limb bằng 0), gán `r.digits[0] = v`, trả về `r`.
+- **`Dòng 44–80` (`from_hex(const std::string &s)`):**
+  - `Dòng 46–50`: Khởi tạo `r = 0`; nếu chuỗi bắt đầu bằng `"0x"` hoặc `"0X"` thì đặt `start = 2`.
+  - `Dòng 52–60`: Tạo chuỗi `clean` (`reserve` trước để tối ưu cấp phát), chỉ chép các ký tự hex `0-9`, `a-f`, `A-F`. Nếu `clean.empty()` thì trả về `0`.
+  - `Dòng 63–65`: Khởi tạo `len = clean.length()`, `limb_idx = 0`. Lặp khi còn ký tự (`len > 0`) và chưa đầy mảng (`limb_idx < N`).
+  - `Dòng 66–68`: Tính độ dài cụm tối đa 16 ký tự hex từ cuối chuỗi (`chunk_len = (len >= 16) ? 16 : len`, `chunk_start = len - chunk_len`) và trích `chunk`.
+  - `Dòng 69–75`: Khởi tạo `val = 0`; với mỗi ký tự `c` trong `chunk`, dịch trái `val <<= 4` rồi OR giá trị `0..15` tương ứng vào 4 bit thấp.
+  - `Dòng 76–77`: Ghi `val` vào `r.digits[limb_idx++]`, lùi `len = chunk_start` để đọc cụm 16 ký tự kế tiếp sang trái.
+- **`Dòng 82–99` (`to_hex()`):**
+  - `Dòng 84–88`: Duyệt ngược `top` từ `N - 1` xuống `0` tìm limb cao nhất khác `0`. Nếu `top < 0` trả về `"0"`.
+  - `Dòng 90–92`: In limb cao nhất bằng `"%llx"` (không số 0 thừa ở đầu) vào `s`.
+  - `Dòng 94–97`: Duyệt các limb thấp hơn `top - 1` xuống `0`, in mỗi limb bằng `"%016llx"` (bắt buộc đệm đủ 16 ký tự hex) nối vào `s`.
+- **`Dòng 101–128` (`to_dec()`):**
+  - `Dòng 103`: Nếu bằng `0` trả về `"0"`.
+  - `Dòng 105–107`: Đặt cơ số `BASE10 = 1000000000000000000ULL` ($10^{18}$), sao chép bản thân sang `tmp`, chuỗi kết quả `s`.
+  - `Dòng 109–115`: Lặp khi `!tmp.is_zero()`: chia `tmp` cho `BASE10` từ limb `N - 1` xuống `0` bằng `uint128_t`: `cur = (rem << 64) | tmp.digits[i]`, cập nhật `tmp.digits[i] = cur / BASE10`, `rem = cur % BASE10`.
+  - `Dòng 117–125`: Lấy phần dư `chunk` (18 chữ số thập phân). Nếu `tmp.is_zero()` (đây là khối cao nhất) thì format `"%llu"` (không đệm 0 đầu); ngược lại format `"%018llu"` (đệm đủ 18 chữ số) rồi ghép vào **trước** chuỗi `s` (`s = std::string(buf) + s`).
+
+### Phần 3: Tiện ích Bit & Định nghĩa `big_t` (Dòng 130–185)
+- **`Dòng 130–136` (`is_zero()`):** Lặp `0..N-1`; nếu bất kỳ `digits[i] != 0` trả về `false`; hết vòng trả `true`.
+- **`Dòng 138` (`is_odd()`):** Trả về `(digits[0] & 1) != 0` (`O(1)`).
+- **`Dòng 141–158` (`bit_length()`):**
+  - `Dòng 143–147`: Tìm `top` là limb cao nhất khác 0; nếu `top < 0` trả về `0`.
+  - `Dòng 149–151` (GCC/Clang): Gọi `__builtin_clzll(digits[top])` đếm số bit 0 đầu của limb cao nhất (an toàn vì `digits[top] != 0`), trả về `top * 64 + (64 - lz)`.
+  - `Dòng 152–157` (Fallback trình biên dịch khác): Đếm bằng vòng lặp `while (v > 0) { bits++; v >>= 1; }`.
+- **`Dòng 160–166` (`test_bit(size_t i)`):** Tính `limb = i / 64`; nếu `limb >= N` trả `false`; tính `bit = i % 64`, trả `((digits[limb] >> bit) & 1ULL) != 0`.
+- **`Dòng 168–174` (`set_bit(size_t i)`):** Tính `limb = i / 64`; nếu `limb < N` thì bật bit bằng `digits[limb] |= (1ULL << (i % 64))`.
+- **`Dòng 177–185`:** Định nghĩa các bí danh tiện dụng (`uint512_t`, `uint1024_t`, `uint2048_t`) và hằng cấu hình `MAX_PRIME_BITS = 1024`, `BIG_LIMBS = 2 * MAX_PRIME_BITS / 64 = 32`, `typedef uint_t<BIG_LIMBS> big_t`.
+
+### Phần 4: Các toán tử So sánh (Dòng 188–217)
+- **`Dòng 188–195` (`operator==`):** Duyệt `i = 0..N-1`, gặp `a.digits[i] != b.digits[i]` trả `false`, hết vòng trả `true`.
+- **`Dòng 197–198` (`operator!=`):** Trả `!(a == b)`.
+- **`Dòng 200–208` (`operator<`):** Duyệt ngược `i = N - 1` xuống `0`: nếu `a.digits[i] < b.digits[i]` trả `true`; nếu `a.digits[i] > b.digits[i]` trả `false`. Hết vòng (bằng nhau) trả `false`.
+- **`Dòng 210–217` (`>`, `<=`, `>=`):** Suy diễn trực tiếp từ `<`: `b < a`, `!(b < a)`, `!(a < b)`.
+
+### Phần 5: Cộng, Trừ, Nhân, Dịch bit & `mod_small` (Dòng 221–348)
+- **`Dòng 221–232` (`operator+`):**
+  - `Dòng 224–225`: Khởi tạo `res = 0`, `uint128_t carry = 0`.
+  - `Dòng 226–230`: Với từng limb `i = 0..N-1`: tính tổng 128-bit `sum = (uint128_t)a.digits[i] + b.digits[i] + carry`, lưu 64 bit thấp vào `res.digits[i]`, cập nhật `carry = sum >> 64`.
+- **`Dòng 235–252` (`operator-`, giả định `a >= b`):**
+  - `Dòng 238–239`: Khởi tạo `res = 0`, `uint128_t borrow = 0`.
+  - `Dòng 240–242`: Tính `sub = (uint128_t)b.digits[i] + borrow` (dùng 128-bit để không tràn khi `b[i] = 2^64 - 1` và `borrow = 1`), ép `ai = a.digits[i]`.
+  - `Dòng 243–245`: Nếu `ai >= sub`: trừ trực tiếp `ai - sub`, `borrow = 0`.
+  - `Dòng 246–249`: Ngược lại: mượn $2^{64}$ (`(1 << 64) + ai - sub`), đặt `borrow = 1`.
+- **`Dòng 256–284` (`operator*` — Schoolbook tối ưu):**
+  - `Dòng 260–265`: Tìm độ dài limb thực `len_a`, `len_b` (bỏ limb 0 ở đầu); nếu một trong hai bằng 0 trả ngay `0`.
+  - `Dòng 267–270`: Vòng ngoài `i = 0..len_a - 1`; nếu `a.digits[i] == 0` thì `continue` (tiết kiệm cả vòng trong!); khởi tạo `carry = 0`, `ai = a.digits[i]`.
+  - `Dòng 271–276`: Vòng trong `j = 0..len_b - 1`; nếu `i + j >= N` thì `break` (chống ghi ngoài mảng); tính `prod = ai * b.digits[j] + res.digits[i + j] + carry` (tối đa $2^{128}-1$, không tràn), ghi 64 bit thấp vào `res.digits[i + j]`, giữ 64 bit cao làm `carry`.
+  - `Dòng 277–281`: Lan truyền phần `carry` dư sang các limb `k = i + len_b` trở lên khi `carry > 0 && k < N`.
+- **`Dòng 286–308` (`operator<<`):**
+  - `Dòng 289–290`: `shift == 0` trả `a`; `shift >= N * 64` trả `0`.
+  - `Dòng 292–294`: Tách `limb_shift = shift / 64`, `bit_shift = shift % 64`.
+  - `Dòng 296–299`: Nhánh `bit_shift == 0` (tránh UB dịch 64 bit): chép `res.digits[i] = a.digits[i - limb_shift]`.
+  - `Dòng 300–306`: Nhánh `bit_shift != 0`: phần thấp `low = a.digits[i - limb_shift] << bit_shift`, phần cao lấy các bit tràn từ limb dưới `high = (i > limb_shift) ? (a.digits[i - limb_shift - 1] >> (64 - bit_shift)) : 0`, ghép `res.digits[i] = low | high`.
+- **`Dòng 310–332` (`operator>>`):** Đối xứng hoàn toàn với `<<`:
+  - `Dòng 320–323`: Nhánh `bit_shift == 0`: `res.digits[i] = a.digits[i + limb_shift]`.
+  - `Dòng 324–330`: Nhánh `bit_shift != 0`: `low = a.digits[i + limb_shift] >> bit_shift`, `high = (i + limb_shift + 1 < N) ? (a.digits[i + limb_shift + 1] << (64 - bit_shift)) : 0`, ghép `low | high`.
+- **`Dòng 335–348` (`mod_small(const uint_t<N> &a, uint32_t m)`):**
+  - `Dòng 338–341`: Nếu `m == 0` hoặc `a == 0` trả về `0`; tìm `top` là limb cao nhất khác 0.
+  - `Dòng 343–347`: Sơ đồ Horner duyệt ngược `i = top..0`: `rem = ((rem << 64) | a.digits[i]) % m`, trả `static_cast<uint32_t>(rem)`.
+
+### Phần 6: Phép chia số lớn `divmod`, `/`, `%` — Knuth Algorithm D (Dòng 367–509)
+- **`Dòng 370–389` (Chuẩn bị & biên):**
+  - `Dòng 370`: Khai báo `quo, rem` tạm (để hỗ trợ aliasing nếu `q` hoặc `r` trùng biến với `a` hoặc `b`).
+  - `Dòng 373–379`: Đếm độ dài thực `n` của `b`; nếu `n == 0` (chia 0) gán `q = quo; r = rem; return;`.
+  - `Dòng 381–385`: Nếu `a < b` trả ngay `q = 0`, `r = a`.
+  - `Dòng 387–388`: Đếm độ dài thực `m_len` của `a` (chắc chắn `m_len >= n >= 1`).
+- **`Dòng 390–399` (Đường tắt chia 1 limb `n == 1` — Short Division):**
+  - `Dòng 392–393`: Lấy `d = b.digits[0]`, khởi tạo `uint128_t cur_rem = 0`.
+  - `Dòng 394–398`: Duyệt ngược `i` từ `m_len - 1` xuống `0`: ghép `cur = (cur_rem << 64) | a.digits[i]`, ghi thương `quo.digits[i] = cur / d`, cập nhật dư `cur_rem = cur % d`.
+  - `Dòng 399`: Lưu phần dư vào `rem.digits[0]`.
+- **`Dòng 400–420` (Knuth D — Bước D1 Chuẩn hóa):**
+  - `Dòng 403`: Tính `s = __builtin_clzll(b.digits[n - 1])` (số bit cần dịch trái để bit 63 của `v[n-1]` bằng 1).
+  - `Dòng 404–405`: Khai báo mảng stack `v[N]` (chứa `b << s`) và `u[N + 1]` (chứa `a << s`, thêm 1 limb `u[m_len]` cho các bit tràn sang trái).
+  - `Dòng 407–410`: Nếu `s == 0` (đã chuẩn hóa sẵn): chép thẳng `v`, `u` và đặt `u[m_len] = 0`.
+  - `Dòng 411–420`: Nếu `s > 0`: dịch trái `b` sang `v` và `a` sang `u` đi `s` bit (lưu phần tràn cao nhất của `a` vào `u[m_len] = a.digits[m_len - 1] >> (64 - s)`).
+- **`Dòng 422–428` (Chuẩn bị vòng lặp chính D2):**
+  - `Dòng 422–424`: Định nghĩa `BASE = 1 << 64` (128-bit), lưu 2 limb cao nhất của số chia `v_hi = v[n - 1]`, `v_lo = v[n - 2]`.
+  - `Dòng 427–428`: Duyệt ngược `j` từ `m_len - n` xuống `0` (mỗi lượt tính chính xác 1 limb 64-bit của thương `quo.digits[j]`).
+- **`Dòng 430–440` (Bước D3 — Ước lượng và hiệu chỉnh thương thử $\hat{q}$):**
+  - `Dòng 431–433`: Ghép 2 limb cao nhất `num = (u[j+n] << 64) | u[j+n-1]`, tính `q_hat = num / v_hi` và `r_hat = num % v_hi`.
+  - `Dòng 434–439`: Vòng hiệu chỉnh (chạy tối đa 2 lần): trong khi `q_hat >= BASE` (thương thử tràn 64 bit) hoặc `q_hat * v_lo > ((r_hat << 64) | u[j+n-2])` (ước lượng quá lớn khi xét thêm limb thứ 2), giảm `q_hat--` và cộng bù `r_hat += v_hi`. Nếu `r_hat >= BASE` thì `break` (vừa biết chắc đã đạt, vừa tránh tràn `r_hat << 64`).
+  - `Dòng 440`: Ép `q_hat` (lúc này chắc chắn `< 2^64`) về `uint64_t qh`.
+- **`Dòng 442–462` (Bước D4 — Nhân và trừ `u[j..j+n] -= qh * v`):**
+  - `Dòng 443`: Khởi tạo `mul_carry = 0` (nhớ phép nhân) và `borrow = 0` (mượn phép trừ).
+  - `Dòng 444–456`: Vòng lặp `i = 0..n - 1`:
+    - `Dòng 445–447`: Tính tích 128-bit `p = qh * v[i] + mul_carry`, tách `p_lo` (64 bit thấp) và `mul_carry` (64 bit cao).
+    - `Dòng 449–455`: Trừ 2 nhịp trên `uint64_t` để không bị tràn `p_lo + borrow`: `t = x - p_lo` (mượn `b1 = (x < p_lo)`), `t2 = t - borrow` (mượn `b2 = (t < borrow)`), ghi `u[i+j] = t2`, gộp `borrow = b1 | b2`.
+  - `Dòng 457–462`: Xử lý limb cao nhất `u[j + n]` trừ đi `mul_carry` và `borrow`, lưu hai cờ mượn `b1_top`, `b2_top`.
+- **`Dòng 464–475` (Bước D5/D6 — Kiểm tra âm & Cộng bù Add-back):**
+  - `Dòng 465`: Nếu `(b1_top | b2_top) != 0` nghĩa là phép trừ bị âm (`qh` lớn hơn thương thật đúng 1 đơn vị).
+  - `Dòng 466–473`: Giảm `qh--`, rồi cộng trả lại `v[0..n-1]` vào `u[j..j+n-1]` với `add_carry`, cộng nốt `add_carry` vào `u[j + n]` (bit tràn mod $2^{64}$ triệt tiêu dấu âm).
+  - `Dòng 475`: Ghi limb thương chuẩn xác `quo.digits[j] = qh`.
+- **`Dòng 478–490` (Bước D8 — Khử chuẩn hóa phần dư & Trả kết quả):**
+  - `Dòng 479–485`: Nếu `s == 0`, chép `u[0..n-1]` sang `rem.digits`. Nếu `s > 0`, dịch phải `u[0..n-1]` đi `s` bit: `rem.digits[i] = (u[i] >> s) | (u[i + 1] << (64 - s))` và `rem.digits[n - 1] = u[n - 1] >> s`.
+  - `Dòng 488–489`: Gán kết quả cuối cùng `q = quo; r = rem;`.
+- **`Dòng 492–506` (`operator/` và `operator%`):** Gọi `divmod(a, b, q, r)` rồi trả về `q` (cho `/`) hoặc `r` (cho `%`).
+- **`Dòng 508` (`#endif // BIGINT_CPP`):** Đóng include guard.
+
+---
+
+## 3.4. File `dh.cpp` (170 dòng) — Số học Mô-đun & Trao đổi khóa Diffie-Hellman
+
+*(Phụ trách: Mạnh + bộ 3 hàm đối chiếu pseudocode Khang bổ sung.)*
+
+### Include Guard & Thư viện (Dòng 10–14)
+- **`Dòng 10–11` (`#ifndef DH_CPP` / `#define DH_CPP`):** Include guard Unity Build.
+- **`Dòng 13` (`#include <assert.h>`):** Nạp macro `assert` dùng để kiểm tra tiền điều kiện trong `modular_exponentiation`.
+- **`Dòng 14` (`#include "bigint.cpp"`):** Nạp kiểu số lớn `uint_t<N>` và `big_t`.
+
+### Phần 1: Các thuật toán theo `pseudocode-modular-operation.pdf` (Dòng 21–68)
+- **`Dòng 22–32` (`AddMod(uint_t<N> x, uint_t<N> y, const uint_t<N> &p)`):**
+  - `Dòng 25–26`: Rút gọn đầu vào `x = x % p; y = y % p;` đảm bảo `0 <= x, y < p`.
+  - `Dòng 27`: Tính `p_minus_y = p - y` (chắc chắn dương vì `y < p`).
+  - `Dòng 28–30`: Nếu `x >= p_minus_y` (tương đương `x + y >= p`), trả về `x - p_minus_y` (tương đương `x + y - p`) mà **không cần cộng `x + y` nên không bao giờ tràn n-bit**.
+  - `Dòng 31`: Ngược lại `x + y < p`, cộng trực tiếp `return x + y;`.
+- **`Dòng 36–49` (`MultMod(uint_t<N> x, const uint_t<N> &y, const uint_t<N> &p)`):**
+  - `Dòng 39–41`: Khởi tạo `ret = 0`, rút gọn `x = x % p`, lấy số bit `n = y.bit_length()`.
+  - `Dòng 42–47`: Duyệt từng bit `i` từ `0` đến `n - 1` của `y` (Double-and-Add):
+    - `Dòng 43–45`: Nếu bit `i` của `y` là `1`, cộng dồn `ret = AddMod(ret, x, p)`.
+    - `Dòng 46`: Nhân đôi `x = AddMod(x, x, p)` (tương đương tính $x \cdot 2^{i+1} \bmod p$).
+  - `Dòng 48`: Trả về `ret = (x * y) % p`.
+- **`Dòng 52–68` (`ExpMod(const uint_t<N> &x, const uint_t<N> &y, const uint_t<N> &p)`):**
+  - `Dòng 55–57`: Nếu `p == 1` trả về `0`.
+  - `Dòng 58–60`: Khởi tạo `ret = 1`, `base = x % p`, `n = y.bit_length()`.
+  - `Dòng 61–66`: Duyệt từng bit `i = 0..n - 1` (Right-to-Left Square-and-Multiply): nếu bit `i` là `1` thì `ret = MultMod(ret, base, p)`; sau đó luôn bình phương `base = MultMod(base, base, p)`.
+  - `Dòng 67`: Trả về `ret`.
+
+### Phần 2: `modular_exponentiation` — Lũy thừa Mô-đun chính (Dòng 91–111)
+- **`Dòng 91–93`:** Khai báo `modular_exponentiation(const big_t &base, const big_t &exp, const big_t &mod)` và tạo hằng `one = big_t::from_u64(1)`.
+- **`Dòng 95–97`:** Nếu `mod == 0` (tránh chia 0) hoặc `mod == 1` (mọi số mod 1 bằng 0), trả về `big_t()` (`0`).
+- **`Dòng 98` (`assert(mod.bit_length() <= MAX_PRIME_BITS);`):** Khẳng định `mod` nằm trong nửa dưới của `big_t` để tích `result * result` hoặc `result * b` (tối đa `2 * MAX_PRIME_BITS` bit) không bao giờ bị tràn.
+- **`Dòng 100–101`:** Rút gọn `b = base % mod` (đưa về `[0, mod - 1]`), khởi tạo `result = 1`.
+- **`Dòng 103–109` (Vòng lặp Left-to-Right Square-and-Multiply):**
+  - `Dòng 103`: Lấy `nbits = exp.bit_length()` (nếu `exp == 0` thì `nbits = 0`, không vào vòng lặp, trả `1`).
+  - `Dòng 104`: `for (size_t i = nbits; i-- > 0;)` — duyệt ngược từ `nbits - 1` xuống `0` an toàn với kiểu không dấu `size_t`.
+  - `Dòng 105`: Luôn bình phương và lấy dư ngay: `result = (result * result) % mod` (dùng Schoolbook 128-bit + Knuth D).
+  - `Dòng 106–108`: Nếu bit thứ `i` của `exp` là `1`, nhân thêm `b` và lấy dư ngay: `result = (result * b) % mod`.
+- **`Dòng 110`:** Trả về `result`.
+
+### Phần 3: `choose_generator` & `is_valid_public_value` (Dòng 133–170)
+- **`Dòng 133–155` (`choose_generator(const big_t &p)`):**
+  - `Dòng 135–140`: Tạo hằng `one`, `two`; nếu `p < 7` (safe prime tối thiểu hữu dụng là `7 = 2*3 + 1`) trả fallback `2`.
+  - `Dòng 141–142`: Tính `p_minus_1 = p - 1` và `q = p_minus_1 >> 1` (chính là `(p - 1) / 2`).
+  - `Dòng 144–153`: Thử lần lượt `h = 2, 3, ... < 1000000`:
+    - `Dòng 145–146`: Chuyển `h` thành `hb`; nếu `hb >= p - 1` thì `break`.
+    - `Dòng 148`: Tính bình phương `g = (hb * hb) % p` (thặng dư bậc hai; với `h = 2` và mọi `p > 5` thì `g = 4`).
+    - `Dòng 149`: Nếu `g == 1` thì bỏ qua (`continue`).
+    - `Dòng 150–152`: Kiểm tra `modular_exponentiation(g, q, p) == one`. Vì `q` nguyên tố và `g != 1`, đẳng thức này khẳng định bậc của `g` đúng bằng `q` ⇒ trả về `g` ngay ở lượt đầu tiên (`h = 2`, `g = 4`)!
+  - `Dòng 154`: Fallback trả `2` nếu `p` không phải safe prime.
+- **`Dòng 160–168` (`is_valid_public_value(const big_t &v, const big_t &p)`):**
+  - `Dòng 162–164`: Nếu `p < 7` trả `false`.
+  - `Dòng 165`: Kiểm tra `if (v < two || v > p - two) return false;` — loại `v = 0, 1, p - 1` và các giá trị `>= p`.
+  - `Dòng 166–167`: Tính `q = (p - 1) >> 1` và trả về `modular_exponentiation(v, q, p) == one` — khẳng định `v` thuộc đúng nhóm con cấp nguyên tố `q` (chống tấn công nhóm con nhỏ).
+- **`Dòng 170` (`#endif // DH_CPP`):** Đóng include guard.
+
+---
+
+## 3.5. File `prime.cpp` (484 dòng) — Rejection Sampling, Miller-Rabin & Sinh Safe Prime
+
+*(Phụ trách: Lâm Duy Minh.)*
+
+### Include Guard & Phụ thuộc (Dòng 15–20)
+- **`Dòng 15–16` (`#ifndef PRIME_CPP` / `#define PRIME_CPP`):** Include guard Unity Build.
+- **`Dòng 18–20`:** Nạp `"prng.cpp"`, `"bigint.cpp"`, `"dh.cpp"` (tất cả đều có include guard nên không bị nạp trùng).
+
+### Phần 1: Sinh số ngẫu nhiên lớn & Rejection Sampling (Dòng 28–97)
+- **`Dòng 28–55` (`static big_t random_upto_bits(prng_ctx *ctx, size_t bits)`):**
+  - `Dòng 30–34`: Khởi tạo `res = 0`; nếu `bits == 0` trả về `0`.
+  - `Dòng 36–40`: Chặn trên `bits <= BIG_LIMBS * 64` để không ghi vượt mảng `digits`.
+  - `Dòng 42–46`: Tính số limb cần sinh `num_limbs = (bits + 63) / 64` (làm tròn lên); vòng `for` đổ `prng_next_u64(ctx)` vào từng `res.digits[i]`.
+  - `Dòng 48–53`: Tính số bit lẻ ở limb cao nhất `rem_bits = bits % 64`; nếu `rem_bits != 0`, tạo mặt nạ `mask = (1ULL << rem_bits) - 1ULL` và AND `res.digits[num_limbs - 1] &= mask` để xóa các bit thừa cao hơn `bits - 1`. Trả về `res` phân phối đều tuyệt đối trên `[0, 2^bits - 1]`.
+- **`Dòng 59–75` (`big_t random_bits(prng_ctx *ctx, size_t bits)`):**
+  - `Dòng 61–70`: Xử lý `bits == 0` và chặn trên `max_bits`.
+  - `Dòng 72–74`: Gọi `res = random_upto_bits(ctx, bits)` rồi ép bật bit cao nhất `res.set_bit(bits - 1)` ⇒ luôn nằm trong `[2^(bits-1), 2^bits - 1]`, có **đúng `bits` bit**.
+- **`Dòng 79–97` (`big_t random_range(prng_ctx *ctx, const big_t &lo, const big_t &hi)`):**
+  - `Dòng 81–84`: Nếu `hi <= lo` trả ngay `lo`.
+  - `Dòng 86–87`: Tính độ rộng `range = hi - lo` và số bit nhỏ nhất `k = range.bit_length()` sao cho $2^{k-1} \le R \le 2^k - 1$.
+  - `Dòng 89–96`: Vòng lặp Rejection Sampling: sinh `r = random_upto_bits(ctx, k)`; nếu `r <= range` thì chấp nhận và trả về `lo + r`; nếu `r > range` thì vứt bỏ và lặp lại (loại 100% modulo bias, trung bình `< 2` lượt).
+
+### Phần 2: Miller-Rabin trên `uint64_t` (Dòng 103–195)
+- **`Dòng 103–119` (`static uint64_t powmod_u64(base, exp, mod)`):**
+  - `Dòng 105–108`: `mod == 1` trả `0`; khởi tạo `res = 1`, `b = base % mod`.
+  - `Dòng 109–118`: Right-to-Left binary exponentiation, dùng `static_cast<uint128_t>(...)` khi nhân 2 số `uint64_t` để không tràn 64-bit trước khi `% mod`.
+- **`Dòng 121–141` (`static bool miller_rabin_witness_u64(a, d, s, n)`):**
+  - `Dòng 123–127`: Tính `x = powmod_u64(a, d, n)`; nếu `x == 1 || x == n - 1` trả `true` (đạt).
+  - `Dòng 128–139`: Lặp `r = 1..s - 1`: bình phương `x = (x * x) % n` qua `uint128_t`; gặp `n - 1` trả `true`; gặp `1` trả `false` ngay (căn bậc hai không tầm thường của `1`).
+  - `Dòng 140`: Không gặp `n - 1` ⇒ trả `false` (hợp số).
+- **`Dòng 144–195` (`bool is_probable_prime_u64(ctx, n, rounds = 40)`):**
+  - `Dòng 146–151`: Xử lý `n < 2` (`false`), `n == 2 || n == 3` (`true`), `n` chẵn (`false`).
+  - `Dòng 153–159`: Phân tích `n - 1 = 2^s * d` bằng vòng `while ((d & 1ULL) == 0) { d >>= 1; s++; }`.
+  - `Dòng 161–176`: Chuẩn bị `rounds` (mặc định 40) và mặt nạ `mask` cho Rejection Sampling trên `range = n - 3` (để chọn `a = 2 + r` trong `[2, n - 2]`).
+  - `Dòng 178–194`: Lặp `rounds` lần: sinh `r` bằng Rejection Sampling (`do { r = prng_next_u64(ctx) & mask; } while (r > range);`), đặt `a = 2 + r`, gọi `miller_rabin_witness_u64(a, d, s, n)`; hễ sai 1 vòng trả `false` ngay, qua hết trả `true`.
+
+### Phần 3: Miller-Rabin trên `big_t` (Dòng 202–294)
+- **`Dòng 202–223` (`static size_t count_trailing_zeros(const big_t &x)`):**
+  - `Dòng 204–221`: Duyệt từ limb thấp nhất `i = 0` lên `BIG_LIMBS - 1`, tìm limb đầu tiên khác `0`.
+  - `Dòng 208–209` (GCC/Clang): Trả `i * 64 + __builtin_ctzll(x.digits[i])` (Count Trailing Zeros).
+  - `Dòng 211–218` (Fallback): Đếm bằng vòng lặp `while ((v & 1ULL) == 0)`.
+- **`Dòng 227–294` (`bool is_probable_prime(prng_ctx *ctx, const big_t &n, int rounds = 40)`):**
+  - `Dòng 229–245`: Khởi tạo `one, two, three`; xử lý `n < 2` (`false`), `n == 2 || n == 3` (`true`), `!n.is_odd()` (`false`).
+  - `Dòng 248–251`: Tính `n_minus_1 = n - 1`, `n_minus_2 = n - 2`, `s = count_trailing_zeros(n_minus_1)`, `d = n_minus_1 >> s` (phân tích $n - 1 = 2^s \cdot d$).
+  - `Dòng 253–256`: Nếu `rounds <= 0` thì ép về mặc định `40`.
+  - `Dòng 259–291`: Lặp `rounds` vòng độc lập:
+    - `Dòng 262`: Chọn cơ sở ngẫu nhiên đều `a = random_range(ctx, two, n_minus_2)`.
+    - `Dòng 265–269`: Tính `x = modular_exponentiation(a, d, n)`; nếu `x == one || x == n_minus_1` thì `continue` sang vòng tiếp theo.
+    - `Dòng 271–285`: Đặt `passed_round = false`; lặp `r = 1..s - 1`: tính `x = (x * x) % n`; gặp `x == n_minus_1` thì `passed_round = true; break;`; gặp `x == one` thì `return false;` ngay (căn bậc hai không tầm thường của `1`).
+    - `Dòng 287–290`: Nếu `!passed_round`, `a` là nhân chứng hợp số ⇒ `return false;`.
+  - `Dòng 293`: Qua hết `rounds` vòng ⇒ `return true;`.
+
+### Phần 4: Sàng đồng thời & Pipeline sinh Safe Prime 4 tầng (Dòng 301–484)
+- **`Dòng 301–329` (`SMALL_PRIMES[]` & `NUM_SMALL_PRIMES`):** Mảng hằng gồm **302 số nguyên tố lẻ nhỏ hơn 2000** (từ `3` đến `1999`).
+- **`Dòng 336–352` (`static bool passes_safe_prime_sieve(const big_t &q, size_t bitsize)`):**
+  - `Dòng 338–350`: Duyệt từng `r = SMALL_PRIMES[i]`:
+    - `Dòng 341–344`: Nếu `bitsize <= 12 && r >= (1U << (bitsize - 2))` thì `break` (tránh loại nhầm khi chính `q == r` ở kích thước bit rất nhỏ).
+    - `Dòng 345`: Tính 1 lần duy nhất `rem = mod_small(q, r)`.
+    - `Dòng 346–349`: Nếu `rem == 0` (`r | q`) hoặc `rem == (r - 1) / 2` (`r | (2q + 1)` tức `r | p`) thì trả `false` ngay.
+  - `Dòng 351`: Qua hết 302 số nguyên tố nhỏ ⇒ trả `true`.
+- **`Dòng 355–391` (`static bool miller_rabin_base2(const big_t &n)`):**
+  - Tương tự 1 vòng của `is_probable_prime`, nhưng cố định cơ sở `a = 2` (`two`) — không cần gọi `random_range`, chạy cực nhanh để lọc sơ bộ `> 99.99%` hợp số còn sót sau sàng.
+- **`Dòng 394–402` (`struct SafePrimeStats` & `g_last_safe_prime_stats`):** Lưu 4 chỉ số thống kê của lần sinh gần nhất (`total_candidates`, `passed_sieve`, `passed_q_base2`, `passed_p_base2`) phục vụ đo benchmark.
+- **`Dòng 411–470` (`big_t generate_safe_prime(prng_ctx *ctx, size_t bitsize = 512, int rounds = 40)`):**
+  - `Dòng 413–420`: Trường hợp biên rất nhỏ: `bitsize < 3` trả `5`; `bitsize == 3` trả `7`.
+  - `Dòng 422–423`: Khởi tạo `one = 1` và bộ đếm `stats = {0, 0, 0, 0}`.
+  - `Dòng 425–469` (Vòng lặp `while (true)` tìm cặp `(q, p)`):
+    - `Dòng 427`: Tăng `stats.total_candidates++`.
+    - `Dòng 432–433`: Sinh `q = random_bits(ctx, bitsize - 1)` (đúng `bitsize - 1` bit, bit cao nhất = 1) và `q.set_bit(0)` (ép `q` lẻ) ⇒ đảm bảo `p = 2q + 1` có **chính xác `bitsize` bit** và luôn lẻ.
+    - `Dòng 436–440` (**Tầng 1 — Sàng đồng thời**): Gọi `passes_safe_prime_sieve(q, bitsize)`; không đạt thì `continue` (loại ~98.56%); đạt thì `stats.passed_sieve++`.
+    - `Dòng 443–447` (**Tầng 2 — MR cơ sở 2 trên `q`**): Gọi `miller_rabin_base2(q)`; không đạt thì `continue`; đạt thì `stats.passed_q_base2++`.
+    - `Dòng 450–455` (**Tầng 3 — MR cơ sở 2 trên `p`**): Tính `p = (q << 1) + one` (dịch trái 1 bit cộng 1 = `2q + 1`); gọi `miller_rabin_base2(p)`; không đạt thì `continue`; đạt thì `stats.passed_p_base2++`.
+    - `Dòng 458–465` (**Tầng 4 — Xác nhận đầy đủ `rounds` vòng**): Gọi `is_probable_prime(ctx, q, rounds)` rồi `is_probable_prime(ctx, p, rounds)`; cả hai đều đạt thì lưu `g_last_safe_prime_stats = stats` và `return p;`.
+- **`Dòng 473–482` (`big_t generate_private_key(prng_ctx *ctx, const big_t &p)`):**
+  - `Dòng 475–479`: Nếu `p <= 4` trả fallback `2`.
+  - `Dòng 480–481`: Tính `p_minus_two = p - 2` và trả về `random_range(ctx, two, p_minus_two)` — khóa riêng phân phối đều tuyệt đối trên `[2, p - 2]`.
+- **`Dòng 484` (`#endif // PRIME_CPP`):** Đóng include guard.
+
+---
+
+## 3.6. File `main.cpp` (201 dòng) — Chương trình chính & Giao diện CLI
+
+*(Tích hợp & hoàn thiện: Vương Hữu Khang & Tạ Quang Mạnh.)*
+
+### Macro đầu file, Thư viện chuẩn & Unity Build (Dòng 14–39)
+- **`Dòng 14` (`#define _CRT_RAND_S`):** Đặt ở dòng code đầu tiên trước mọi `#include` để đảm bảo `<cstdlib>` trên Windows mở khóa hàm `rand_s`.
+- **`Dòng 16–22`:** Nạp các header chuẩn C++14: `<iostream>` (in/nhập), `<iomanip>`, `<chrono>` (đo thời gian chính xác cao), `<string>`, `<cstring>` (`std::memset`), `<cstdlib>` (`strtoul`, `strtol`), `<cctype>` (`isxdigit`).
+- **`Dòng 25–29`:** `#include` 5 module theo đúng thứ tự phụ thuộc: `fips202.cpp` → `prng.cpp` → `bigint.cpp` → `dh.cpp` → `prime.cpp`.
+- **`Dòng 31–39` (`print_usage`):** In hướng dẫn sử dụng các cờ `--bits`, `--rounds`, `--seed`, `-h`/`--help`.
+
+### Bước 1: Parse & Validate tham số dòng lệnh (Dòng 41–102)
+- **`Dòng 43–46`:** Khởi tạo cấu hình mặc định: `bit_size = 512`, `rounds = 40`, `fixed_seed_hex = ""`, `use_fixed_seed = false`.
+- **`Dòng 49–85` (Vòng lặp `for (int i = 1; i < argc; i++)`):**
+  - `Dòng 51–53` (`-h` hoặc `--help`): Gọi `print_usage(argv[0])` và `return 0;`.
+  - `Dòng 54–61` (`--bits <N>`): Dùng `std::strtoul(argv[++i], &end, 10)` parse số nguyên dương; kiểm tra `end == argv[i]` (rỗng/không phải số), `*end != '\0'` (dính chữ thừa như `"512abc"`), hoặc `v == 0` ⇒ báo lỗi và `return 1;`.
+  - `Dòng 62–69` (`--rounds <K>`): Dùng `std::strtol(argv[++i], &end, 10)` parse và kiểm tra nằm trong `[1, 1000]`; sai thì báo lỗi và `return 1;`.
+  - `Dòng 70–79` (`--seed <HEX>`): Kiểm tra đúng 64 ký tự (`fixed_seed_hex.length() == 64`) và mọi ký tự thỏa `std::isxdigit(static_cast<unsigned char>(...)) != 0` (ép `unsigned char` tránh UB khi `char` âm); sai thì báo lỗi và `return 1;`.
+  - `Dòng 80–84`: Bắt mọi tham số lạ hoặc thiếu giá trị, in lỗi + hướng dẫn và `return 1;`.
+- **`Dòng 87–94` (Kiểm tra biên `bit_size`):**
+  - `Dòng 87–89`: Nếu `bit_size < 512`, in cảnh báo (nhưng vẫn cho chạy để test nhanh 64/128 bit).
+  - `Dòng 90–94`: Nếu `bit_size > MAX_PRIME_BITS` (1024), báo lỗi rõ ràng kèm chỉ dẫn sửa `MAX_PRIME_BITS` trong `bigint.cpp` và `return 1;` (ngăn tràn bộ đệm 2048-bit).
+- **`Dòng 96–102`:** In banner tiêu đề Đồ án 1 Nhóm 18 và cấu hình hiện tại (`bit_size`, `rounds`).
+
+### Bước 2: Khởi tạo CSPRNG (Dòng 105–123)
+- **`Dòng 105–106`:** Khai báo ngữ cảnh `prng_ctx ctx;` và mảng `uint8_t seed[32];` (256 bit).
+- **`Dòng 108–115` (Nhánh `if (use_fixed_seed)`):** Xóa trắng `seed` bằng `std::memset`, duyệt `i = 0..31` cắt từng cặp 2 ký tự hex `fixed_seed_hex.substr(i * 2, 2)` đổi sang 1 byte bằng `std::strtoul(..., nullptr, 16)`.
+- **`Dòng 116–120` (Nhánh `else` — mặc định an toàn):** Gọi `randombytes(seed, sizeof(seed))` lấy 32 byte entropy thật từ OS (`rand_s` / `getrandom`).
+- **`Dòng 122` (`prng_seed(&ctx, seed, sizeof(seed));`):** Hấp thụ seed vào trạng thái Sponge SHAKE128.
+
+### Bước 3: Sinh Safe Prime `p` & Chọn phần tử sinh `g` (Dòng 126–150)
+- **`Dòng 126–132`:** Ghi mốc `t0`, gọi `p = generate_safe_prime(&ctx, bit_size, rounds)`, ghi mốc `t1`, tính thời gian `time_prime` (giây) bằng `std::chrono::duration<double>(t1 - t0).count()`, in thời gian và giá trị `p.to_hex()`.
+- **`Dòng 133–138` (Chốt kiểm tra 1):** Kiểm tra `p.bit_length() != bit_size || !p.is_odd()`; nếu sai thì báo lỗi và `return 1;`.
+- **`Dòng 140–146`:** Gọi `g = choose_generator(p)`, tính `q = (p - 1) >> 1`, kiểm tra độc lập `g_ok = (g != 1) && (modular_exponentiation(g, q, p) == 1)`, in `g` và kết quả kiểm tra `DUNG`/`SAI`.
+- **`Dòng 147–150` (Chốt kiểm tra 2):** Nếu `!g_ok`, báo lỗi `p` có thể không phải safe prime và `return 1;`.
+
+### Bước 4–7: Trao đổi khóa Alice–Bob & Xác minh kết quả (Dòng 153–201)
+- **`Dòng 153–157` (Bước `[3]` — Sinh khóa riêng):** Gọi `a = generate_private_key(&ctx, p)` cho Alice và `b = generate_private_key(&ctx, p)` cho Bob (đều nằm đều trong `[2, p - 2]`), in dạng hex.
+- **`Dòng 160–168` (Bước `[4]` — Tính giá trị công khai):** Đo thời gian `t_pub0..t_pub1`, tính `A = modular_exponentiation(g, a, p)` và `B = modular_exponentiation(g, b, p)`, in `A`, `B` và thời gian tính.
+- **`Dòng 170–176` (Chốt kiểm tra 3 — Xác thực giá trị công khai):** Gọi `pub_ok = is_valid_public_value(A, p) && is_valid_public_value(B, p)` (kiểm tra `[2, p - 2]` và $A^q \equiv B^q \equiv 1 \pmod p$); nếu `!pub_ok`, báo lỗi và `return 1;`.
+- **`Dòng 179–188` (Bước `[5]` — Tính bí mật chung):** Đo thời gian `t_dh0..t_dh1`, Alice tính `s_alice = modular_exponentiation(B, a, p)`, Bob tính `s_bob = modular_exponentiation(A, b, p)`, in `s_A`, `s_B` và thời gian tính `time_dh`.
+- **`Dòng 191–198` (Chốt kiểm tra 4 — Xác minh cuối cùng):** Kiểm tra `matched = (s_alice == s_bob) && (s_alice > big_t::from_u64(1))` (loại cả trường hợp suy biến `0` và `1`). Nếu `matched` đúng, in `[XAC MINH THANH CONG] Bi mat chung hai ben hoan toan TRUNG KHOP!`, ngược lại in thông báo thất bại.
+- **`Dòng 200` (`return 0;`):** Kết thúc chương trình thành công.
