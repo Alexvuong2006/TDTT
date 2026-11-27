@@ -68,18 +68,19 @@ Mục tiêu của Phần 1 là đảm bảo **tuyệt đối không xảy ra s�
 
 > ⚠️ **CẢNH BÁO ĐỎ:** Khi biên dịch với MinGW `g++` trên Windows, nếu đường dẫn đầu ra có **chữ tiếng Việt có dấu** (ví dụ `D:\Nhập môn Crypto\...`), trình liên kết `ld.exe` có thể báo lỗi `cannot open output file ...: Invalid argument`.
 >
-> **Cách phòng tránh 100%:**
-> 1. Tải file `.zip` từ Moodle về thư mục **KHÔNG DẤU, KHÔNG KHOẢNG TRẮNG** như `C:\Users\Khang\Downloads` hoặc tạo sẵn thư mục `C:\demo_dh`.
-> 2. Luôn `cd` vào thẳng bên trong thư mục `project_01_source` rồi mới gõ lệnh `g++ -o dh.exe main.cpp` (dùng tên file tương đối `dh.exe`, không truyền đường dẫn tuyệt đối có dấu).
+> **Cách phòng tránh 100% (dùng ổ D gọn nhẹ khi ổ C đầy):**
+> 1. Tạo sẵn thư mục **KHÔNG DẤU, KHÔNG KHOẢNG TRẮNG** ở ổ D: `D:\demo_dh` (tuyệt đối không giải nén vào `D:\Nhập môn Crypto`).
+> 2. Vào **Settings → Downloads** của trình duyệt (Chrome/Edge), đổi tạm thư mục tải về sang `D:\demo_dh` (hoặc bật *"Ask where to save each file before downloading"*) để khi tải từ Moodle file lưu thẳng vào ổ D, không tốn dung lượng ổ C.
+> 3. Luôn mở Terminal đứng thẳng bên trong thư mục `project_01_source` (chuột phải → **Open in Terminal**) rồi gõ lệnh `g++ -o dh.exe main.cpp` (dùng tên file tương đối `dh.exe`, không truyền đường dẫn tuyệt đối có dấu). Nếu tự chuyển từ ổ C sang ổ D: dùng PowerShell gõ `cd D:\demo_dh\...\project_01_source`; nếu dùng CMD thì thêm `/d` (`cd /d D:\demo_dh\...\project_01_source`).
 
 ### C. Bố trí màn hình & Công cụ trước giờ vấn đáp 15 phút
 
 1. **Đăng nhập sẵn Moodle** trên trình duyệt (mở sẵn đúng tab trang nộp Đồ án 1 để nếu thầy yêu cầu tải lại trước mặt thầy thì bấm tải ngay, không mất công nhập mật khẩu/2FA).
-2. **Giải nén sẵn 1 bản đã tải trực tiếp từ Moodle** tại `C:\demo_dh\24120070-24120089-24120091\`.
-3. **Mở sẵn VS Code** tại thư mục `C:\demo_dh\24120070-24120089-24120091\project_01_source`:
+2. **Giải nén sẵn 1 bản đã tải trực tiếp từ Moodle** tại `D:\demo_dh\24120070-24120089-24120091\`.
+3. **Mở sẵn VS Code** tại thư mục `D:\demo_dh\24120070-24120089-24120091\project_01_source`:
    - Mở sẵn 6 tab theo đúng thứ tự phụ thuộc: `main.cpp` | `bigint.cpp` | `dh.cpp` | `prime.cpp` | `prng.cpp` | `fips202.cpp`.
    - Tăng cỡ chữ editor (`Ctrl + =`) lên khoảng `15–16px` để khi chiếu màn hình thầy đọc rõ.
-4. **Mở sẵn 1 cửa sổ Windows Terminal / PowerShell** đứng sẵn tại `project_01_source`:
+4. **Mở sẵn 1 cửa sổ Windows Terminal / PowerShell** đứng sẵn tại `D:\demo_dh\24120070-24120089-24120091\project_01_source`:
    - Tăng cỡ chữ Terminal (`Ctrl + cuộn chuột` hoặc Settings → Font size `16–18pt`).
    - Xóa sạch lịch sử màn hình (`cls`) cho gọn gàng.
 5. **Mở sẵn `report.pdf`** ở 1 tab trình duyệt hoặc PDF reader để khi thầy hỏi bảng benchmark, số liệu đo đạc, hoặc công thức trong báo cáo thì lật ngay tới trang đó.
@@ -93,22 +94,22 @@ Mục tiêu của Phần 1 là đảm bảo **tuyệt đối không xảy ra s�
 
 - **Phần mềm quay khuyến nghị:**
   - **Cách 1 (Nhanh nhất, có sẵn trên Windows 11):** Nhấn `Win + Shift + R` (Snipping Tool Record) → chọn quay toàn màn hình (Full Screen).
-  - **Cách 2 (Chất lượng sắc nét nhất):** Dùng **OBS Studio** (Display Capture, 1920×1080, 30 fps, định dạng `.mp4`).
+  - **Cách 2 (Chất lượng sắc nét nhất):** Dùng **OBS Studio** (Display Capture, 1920×1080, 30 fps, định dạng `.mp4`, chọn thư mục xuất video sang ổ D để khỏi đầy ổ C).
 - **Yêu cầu cốt lõi của thầy:**
   - Thời lượng: **1 đến 2 phút** (đẹp nhất là **1 phút 25 giây – 1 phút 45 giây**, tuyệt đối không dài dòng vượt 2 phút).
   - Bắt buộc bắt đầu **từ bước tải source code trực tiếp từ Moodle** (nhìn thấy giao diện Moodle, click vào file zip nộp bài, thấy file tải xuống).
 - **Mẹo quay 1 phát ăn ngay:**
   - Đăng nhập sẵn Moodle trước khi bấm Record.
-  - Dọn trống thư mục `C:\Users\Khang\Downloads` (hoặc tạo một thư mục tải về riêng trống trơn) để khi tải file zip xuống nhìn thấy rõ ràng, không bị rối lẫn file cũ.
+  - Tạo sẵn thư mục trống `D:\demo_dh` và chỉnh sẵn **Downloads** của trình duyệt lưu thẳng về `D:\demo_dh` để khi tải file zip xuống nhìn thấy rõ ràng, sạch sẽ, không lẫn file cũ và không tốn ổ C.
   - Mở sẵn Notepad ở màn hình phụ (hoặc nhớ sẵn) các câu lệnh để gõ nhanh, mượt, không gõ sai chính tả.
 
 ### B. Kịch bản chi tiết từng mốc thời gian (Tổng ~1 phút 35 giây)
 
 | Mốc thời gian | Thao tác thực hiện trên màn hình | Lưu ý để video "ăn điểm" |
 | :--- | :--- | :--- |
-| **0:00 – 0:15** | Đang ở trang nộp bài trên **Moodle**. Rê chuột vào file `24120070-24120089-24120091.zip` và click tải xuống. Chờ trình duyệt báo tải xong. | Giữ chuột 1–2 giây trên tên file để thầy nhìn rõ đúng bài nộp trên Moodle. |
-| **0:15 – 0:30** | Mở thư mục `Downloads` → chuột phải vào `24120070-24120089-24120091.zip` → **Extract All...** (Giải nén). Mở thư mục vừa giải nén cho thấy đúng 2 thư mục `project_01_source` và `project_01_report`. Click vào `project_01_source` để lộ đúng 6 file `.cpp`. | Cho thầy thấy trực quan không có file rác, không có `.h` hay `.exe` sẵn trong bài nộp. |
-| **0:30 – 0:45** | Trong thư mục `project_01_source`, chuột phải chọn **Open in Terminal** (hoặc gõ `cmd` / `powershell` trên thanh địa chỉ). Gõ lệnh biên dịch:<br>`g++ -std=c++14 -O2 -Wall -Wextra -Wpedantic -o dh.exe main.cpp` | Nhấn Enter. Dừng 2 giây cho thầy thấy terminal không in ra bất kỳ lỗi hay cảnh báo nào (biên dịch sạch 100% chuẩn C++14). |
+| **0:00 – 0:15** | Đang ở trang nộp bài trên **Moodle**. Rê chuột vào file `24120070-24120089-24120091.zip` và click tải xuống (lưu thẳng vào `D:\demo_dh`). Chờ trình duyệt báo tải xong. | Giữ chuột 1–2 giây trên tên file để thầy nhìn rõ đúng bài nộp trên Moodle. |
+| **0:15 – 0:30** | Mở thư mục `D:\demo_dh` → chuột phải vào `24120070-24120089-24120091.zip` → **Extract All...** (Giải nén). Mở thư mục vừa giải nén cho thấy đúng 2 thư mục `project_01_source` và `project_01_report`. Click vào `project_01_source` để lộ đúng 6 file `.cpp`. | Cho thầy thấy trực quan không có file rác, không có `.h` hay `.exe` sẵn trong bài nộp. |
+| **0:30 – 0:45** | Trong thư mục `project_01_source`, chuột phải chọn **Open in Terminal** (Terminal tự đứng sẵn ở ổ D). Gõ lệnh biên dịch:<br>`g++ -std=c++14 -O2 -Wall -Wextra -Wpedantic -o dh.exe main.cpp` | Nhấn Enter. Dừng 2 giây cho thầy thấy terminal không in ra bất kỳ lỗi hay cảnh báo nào (biên dịch sạch 100% chuẩn C++14). |
 | **0:45 – 1:05** | Chạy chương trình với cấu hình mặc định (512-bit):<br>`.\dh.exe` | Chương trình chạy trong ~0.3–0.5s. Cuộn nhẹ hoặc dừng 4–5 giây để thầy nhìn rõ đủ 5 bước: `p` (đúng 512 bit), `g = 4`, `a, b`, `A, B` hợp lệ, `s_A == s_B` và dòng `[XAC MINH THANH CONG]`. |
 | **1:05 – 1:25** | Chạy lệnh xem trợ giúp & chạy thử 1024-bit:<br>`.\dh.exe --help`<br>`.\dh.exe --bits 1024 --rounds 40` | Thể hiện khả năng tùy biến tham số dòng lệnh linh hoạt (sinh safe prime 1024-bit mất khoảng 2–5 giây, rất nhanh và ấn tượng). |
 | **1:25 – 1:40** | *(Tùy chọn, nếu vẫn dưới 1:45)* Chạy với `--seed` cố định:<br>`.\dh.exe --bits 512 --seed 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef` | Chứng minh chế độ tái lập kết quả để debug/kiểm thử hoạt động trơn tru. Sau đó dừng quay. |
@@ -156,7 +157,7 @@ g++ -std=c++14 -O2 -Wall -Wextra -Wpedantic -o dh.exe main.cpp
 
 ### Phương án dự phòng (Plan B) nếu có sự cố
 
-- **Moodle bị chậm/không truy cập được lúc vấn đáp:** Dùng ngay file `24120070-24120089-24120091.zip` đã tải sẵn từ trước đó (để trong `Downloads`), đồng thời có sẵn video quay bước tải từ Moodle làm bằng chứng.
+- **Moodle bị chậm/không truy cập được lúc vấn đáp:** Dùng ngay file `24120070-24120089-24120091.zip` đã tải sẵn từ trước đó (để trong `D:\demo_dh`), đồng thời có sẵn video quay bước tải từ Moodle làm bằng chứng.
 - **Lỡ chạy `--bits 1024` đúng lượt gặp ứng viên lâu (> 10s):** Bình tĩnh giải thích cho thầy: *"Vì sinh số nguyên tố là quá trình ngẫu nhiên (phân bố hình học), thời gian mỗi lần dao động từ 0.4s đến ~12s, trung bình ~4.5s theo benchmark của nhóm"*. Nếu cần nhanh ngay lập tức, có thể bấm `Ctrl + C` và chạy lại hoặc chạy với `--seed` đã test sẵn ra nhanh!
 - **Thầy muốn kiểm tra thêm unit test / benchmark (nếu có hỏi):** Bộ test đầy đủ nằm ở repo gốc `D:\Nhập môn Crypto\GitHub\tests\` (`test_bigint.cpp`, `test_prng_prime.cpp`, `test_dh.cpp`, `bench_safe_prime.cpp`, `crosscheck_div_stress.py`, `crosscheck_modexp.py`). Nhớ nhấn mạnh với thầy: *các file test này không nộp vào `.zip` để tuân thủ đúng quy định `project_01_source/*.cpp`.*
 
