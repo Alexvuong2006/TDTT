@@ -16,6 +16,7 @@
   - [Bài tập 1: Bài toán Tạo phân tử $H_2O$](#bài-tập-1-bài-toán-tạo-phân-tử-h_2o)
   - [Bài tập 2: Bài toán Hãng sản xuất xe ôtô](#bài-tập-2-bài-toán-hãng-sản-xuất-xe-ôtô)
   - [Bài tập 3: Quy trình thu mua mía của nhà máy mía đường](#bài-tập-3-quy-trình-thu-mua-mía-của-nhà-máy-mía-đường)
+  - [Bài tập 4: Bài toán Qua sông (Nhân viên Microsoft & Linux Hacker)](#bài-tập-4-bài-toán-qua-sông-nhân-viên-microsoft--linux-hacker)
 
 ---
 
@@ -506,5 +507,137 @@ Phòng_thu_mua()
    - **Sức chứa nhà máy ($10$) và kích thước mẻ sơ chế ($5$):** Vì sức chứa tối đa của nhà máy là $10 \ge 5$, ngay cả khi 10 xe vào đầy nhà máy (`cho_trong = 0`), toàn bộ 10 xe này đều đi qua được `Trạm_Labo()` để tạo ra `da_do_duong = 10`. Lượng xe này đủ để `Trạm_sơ_chế()` xử lý thành công (thậm chí đủ 2 mẻ 5 xe) và đẩy sang `Trạm_cân_ra()`, từ đó gọi `Up(cho_trong)` giải phóng chỗ trong nhà máy. Do đó không bao giờ xảy ra bế tắc do thiếu xe vào mẻ.
    - **Thứ tự `Down` trong `Trạm_cân_vào()`:** `Down(cho_trong)` được đặt **trước** `Down(mutex_can_vao)`. Nếu đặt ngược lại, khi nhà máy đã đủ 10 xe (`cho_trong == 0`), xe thứ 11 sẽ giữ `mutex_can_vao` trong khi chờ `cho_trong`; tuy không khóa `Trạm_cân_ra()` nhưng làm trạm cân vào bị giữ khóa không cần thiết. Đặt `Down(cho_trong)` ở ngoài là đúng chuẩn *Producer – Consumer*.
    - **Điều kiện tính tiền ở `Phòng_thu_mua()`:** `Up(da_can_ra)` chỉ được gọi sau khi xe đã đi qua tuần tự `Trạm_cân_vào()` (có phiếu cân vào) $\rightarrow$ `Trạm_Labo()` (có phiếu đo độ đường) $\rightarrow$ `Trạm_sơ_chế()` $\rightarrow$ `Trạm_cân_ra()` (có phiếu cân ra). Do đó, khi `Phòng_thu_mua()` vượt qua `Down(da_can_ra)`, chắc chắn xe đã có đầy đủ 3 loại phiếu hợp lệ để `Tính_tiền_mía_phải_trả()`.
+
+---
+
+## Bài tập 4: Bài toán Qua sông (Nhân viên Microsoft & Linux Hacker)
+
+### Đề bài
+Các nhân viên Microsoft (`Employee`) và Linux hacker (`Hacker`) cùng sử dụng một bến sông với các thuyền chở **đúng 4 người** mới được khởi hành. Để đảm bảo an toàn, cần tuân thủ các quy tắc:
+- Không chấp nhận **3 Employee + 1 Hacker** trên cùng một thuyền.
+- Không chấp nhận **3 Hacker + 1 Employee** trên cùng một thuyền.
+- Các trường hợp kết hợp hợp lệ: **4 Hacker**, **4 Employee**, hoặc **2 Hacker + 2 Employee**.
+- Thuyền chỉ khởi hành khi đã có đủ 4 hành khách; người đã lên thuyền khi chưa đầy phải chờ đến khi người thứ 4 xuống thuyền mới cùng qua sông. *(Xem như luôn có sẵn thuyền cho các nhóm hợp lệ).*
+
+Hoạt động của mỗi tiến trình:
+```c
+Hacker() {
+    RuntoRiver();    // Đi đến bờ sông
+    HackerArrives(); // Kiểm tra điều kiện xuống thuyền
+    CrossRiver();    // Khởi hành qua sông
+}
+
+Employee() {
+    RuntoRiver();      // Đi đến bờ sông
+    EmployeeArrives(); // Kiểm tra điều kiện xuống thuyền
+    CrossRiver();      // Khởi hành qua sông
+}
+```
+**Yêu cầu:** Xây dựng 2 thủ tục `HackerArrives()` và `EmployeeArrives()`.
+
+---
+
+### 1. Lời giải chuẩn
+
+```c
+// Khai báo các biến đếm và Semaphore dùng chung
+int hackers = 0;               // Số Linux hacker đang chờ tại bến sông
+int employees = 0;             // Số nhân viên Microsoft đang chờ tại bến sông
+
+Semaphore mutex = 1;           // Đảm bảo độc quyền truy xuất biến hackers, employees
+Semaphore hackerQueue = 0;     // Hàng đợi các Hacker đang chờ đủ nhóm 4 hợp lệ
+Semaphore employeeQueue = 0;   // Hàng đợi các Employee đang chờ đủ nhóm 4 hợp lệ
+
+HackerArrives()
+{
+    Down(mutex);
+    hackers++;
+
+    if (hackers == 4)
+    {
+        // Đủ bộ 4 Hacker -> đánh thức 3 Hacker đang chờ, cùng bản thân qua sông
+        Up(hackerQueue);
+        Up(hackerQueue);
+        Up(hackerQueue);
+        hackers -= 4;
+        Up(mutex);
+    }
+    else if (hackers == 2 && employees >= 2)
+    {
+        // Đủ bộ 2 Hacker + 2 Employee -> đánh thức 1 Hacker & 2 Employee đang chờ
+        Up(hackerQueue);
+        Up(employeeQueue);
+        Up(employeeQueue);
+        hackers -= 2;
+        employees -= 2;
+        Up(mutex);
+    }
+    else
+    {
+        // Chưa tạo được nhóm 4 hợp lệ -> trả mutex và chờ
+        Up(mutex);
+        Down(hackerQueue);
+    }
+}
+
+EmployeeArrives()
+{
+    Down(mutex);
+    employees++;
+
+    if (employees == 4)
+    {
+        // Đủ bộ 4 Employee -> đánh thức 3 Employee đang chờ, cùng bản thân qua sông
+        Up(employeeQueue);
+        Up(employeeQueue);
+        Up(employeeQueue);
+        employees -= 4;
+        Up(mutex);
+    }
+    else if (employees == 2 && hackers >= 2)
+    {
+        // Đủ bộ 2 Employee + 2 Hacker -> đánh thức 1 Employee & 2 Hacker đang chờ
+        Up(employeeQueue);
+        Up(hackerQueue);
+        Up(hackerQueue);
+        employees -= 2;
+        hackers -= 2;
+        Up(mutex);
+    }
+    else
+    {
+        // Chưa tạo được nhóm 4 hợp lệ -> trả mutex và chờ
+        Up(mutex);
+        Down(employeeQueue);
+    }
+}
+```
+
+---
+
+### 2. Giải thích chi tiết
+
+1. **Ý nghĩa các biến và Semaphore:**
+   - `hackers = 0`, `employees = 0`: Lưu số lượng Hacker và Employee hiện đang chờ tại bến sông chưa được ghép thành nhóm 4 hợp lệ.
+   - `Semaphore mutex = 1`: Bảo vệ miền găng (truy cập và cập nhật 2 biến đếm `hackers`, `employees` cũng như kiểm tra điều kiện ghép nhóm), tránh *Race Condition* khi nhiều người đến bến cùng lúc.
+   - `Semaphore hackerQueue = 0`, `Semaphore employeeQueue = 0`: Hàng đợi riêng cho từng nhóm đối tượng. Người đến trước khi chưa đủ bộ 4 hợp lệ sẽ gọi `Down(...)` để ngủ trên hàng đợi tương ứng, chờ người thứ 4 của nhóm đánh thức.
+
+2. **Cơ chế ghép nhóm 4 người hợp lệ (người thứ 4 làm "trưởng nhóm"):**
+   - Mỗi khi một **Hacker** đến (`HackerArrives()`), tăng `hackers++` và chỉ có đúng **2 trường hợp** giúp người này hoàn thành ngay một nhóm 4 hợp lệ:
+     - **Trường hợp 1 (`hackers == 4`):** Đã có 3 Hacker đang chờ trên `hackerQueue` cộng thêm bản thân là đủ **4 Hacker**. Tiến trình này gọi `Up(hackerQueue)` **3 lần** để đánh thức 3 Hacker kia, giảm `hackers -= 4`, trả `mutex` và thoát khỏi `HackerArrives()` để cả 4 người cùng chạy `CrossRiver()`.
+     - **Trường hợp 2 (`hackers == 2 && employees >= 2`):** Đã có 1 Hacker đang chờ và ít nhất 2 Employee đang chờ, cộng thêm bản thân là đủ **2 Hacker + 2 Employee**. Tiến trình này gọi `Up(hackerQueue)` **1 lần** và `Up(employeeQueue)` **2 lần**, giảm `hackers -= 2`, `employees -= 2`, trả `mutex` và cùng 3 người kia qua sông.
+     - **Các trường hợp còn lại (`else`):** Chưa thể ghép bộ 4 hợp lệ (ví dụ: 1H+0E, 2H+1E, 3H+1E,...). Tiến trình bắt buộc phải gọi `Up(mutex)` **trước** rồi mới gọi `Down(hackerQueue)` để ngủ chờ (nếu không trả `mutex` trước khi ngủ sẽ gây **Deadlock** vì không ai khác vào kiểm tra điều kiện được nữa).
+   - Thủ tục `EmployeeArrives()` hoạt động hoàn toàn đối xứng.
+
+3. **Tại sao phải kiểm tra `employees >= 2` (và `hackers >= 2`) thay vì `== 2`?**
+   - Xét tình huống tại bến sông đang có **3 Hacker và 1 Employee** (`hackers = 3, employees = 1`). Nhóm 4 người này **không hợp lệ** (vi phạm luật cấm 3–1) nên cả 4 đều đang chờ.
+   - Lúc này, một **Employee thứ 2** đến: `employees` tăng từ `1` lên `2`, còn `hackers` đang bằng **`3`** (chứ không phải `2`!).
+   - Nhờ điều kiện `employees == 2 && hackers >= 2`, Employee thứ 2 lập tức ghép thành công bộ **2 Employee + 2 Hacker**, đánh thức 1 Employee và 2 Hacker, sau đó cập nhật `employees -= 2` (về `0`) và `hackers -= 2` (còn `1` Hacker tiếp tục chờ cho chuyến sau).
+   - Nếu viết nhầm thành `hackers == 2`, tình huống `(3H, 2E)` sẽ bị bỏ sót không ghép được nhóm!
+
+4. **Kiểm chứng tính đúng đắn & không Deadlock:**
+   - **Bất biến (Invariant):** Sau mỗi lần `Up(mutex)`, số người chờ luôn thỏa $0 \le \text{hackers} \le 3$, $0 \le \text{employees} \le 3$, và không bao giờ đồng thời có $\text{hackers} \ge 2$ lẫn $\text{employees} \ge 2$.
+   - Do đó, tổng số người tối đa có thể bị kẹt chờ ở bến sông là $3 + 1 = 4$ người (trường hợp 3H+1E hoặc 1H+3E). Ngay khi có người thứ 5 bất kỳ đến (dù là Hacker hay Employee), chắc chắn sẽ thỏa một trong hai nhánh `== 4` hoặc `2 + 2` để lập tức cho 4 người qua sông $\rightarrow$ **không bao giờ xảy ra Deadlock**, và **không bao giờ có thuyền 3–1** hay thuyền thiếu 4 người khởi hành.
+
 
 
