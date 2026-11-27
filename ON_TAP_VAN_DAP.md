@@ -28,6 +28,15 @@
   - [3.4. File `dh.cpp` (170 dòng) — Số học Mô-đun & Trao đổi khóa Diffie-Hellman](#34-file-dhcpp-170-dòng--số-học-mô-đun--trao-đổi-khóa-diffie-hellman)
   - [3.5. File `prime.cpp` (484 dòng) — Rejection Sampling, Miller-Rabin & Sinh Safe Prime](#35-file-primecpp-484-dòng--rejection-sampling-miller-rabin--sinh-safe-prime)
   - [3.6. File `main.cpp` (201 dòng) — Chương trình chính & Giao diện CLI](#36-file-maincpp-201-dòng--chương-trình-chính--giao-diện-cli)
+- [PHẦN 4: NGÂN HÀNG CÂU HỎI VẤN ĐÁP TOÀN DIỆN (72 CÂU TỪ TỔNG QUAN ĐẾN HỎI XOÁY)](#phần-4-ngân-hàng-câu-hỏi-vấn-đáp-toàn-diện-72-câu-từ-tổng-quan-đến-hỏi-xoáy)
+  - [4.1. Nhóm 1 — Tổng quan Dự án, Kết quả, Hạn chế & Làm việc nhóm (10 câu)](#41-nhóm-1--tổng-quan-dự-án-kết-quả-hạn-chế--làm-việc-nhóm-10-câu)
+  - [4.2. Nhóm 2 — Tư duy Thiết kế & Kiến trúc Hệ thống (8 câu)](#42-nhóm-2--tư-duy-thiết-kế--kiến-trúc-hệ-thống-8-câu)
+  - [4.3. Nhóm 3 — BigInt, Phép chia Knuth D & Số học Mô-đun (12 câu)](#43-nhóm-3--bigint-phép-chia-knuth-d--số-học-mô-đun-12-câu)
+  - [4.4. Nhóm 4 — Số nguyên tố, Miller-Rabin & Sinh Safe Prime (11 câu)](#44-nhóm-4--số-nguyên-tố-miller-rabin--sinh-safe-prime-11-câu)
+  - [4.5. Nhóm 5 — PRNG, Entropy, Keccak Sponge & Rejection Sampling (9 câu)](#45-nhóm-5--prng-entropy-keccak-sponge--rejection-sampling-9-câu)
+  - [4.6. Nhóm 6 — Diffie-Hellman, Toán học Nhóm & An toàn Mật mã (10 câu)](#46-nhóm-6--diffie-hellman-toán-học-nhóm--an-toàn-mật-mã-10-câu)
+  - [4.7. Nhóm 7 — Kiểm thử, Hiệu năng & Kinh nghiệm Debug thực tế (6 câu)](#47-nhóm-7--kiểm-thử-hiệu-năng--kinh-nghiệm-debug-thực-tế-6-câu)
+  - [4.8. Nhóm 8 — Câu hỏi "Bẫy" & Phản biện Điểm 10 (6 câu)](#48-nhóm-8--câu-hỏi-bẫy--phản-biện-điểm-10-6-câu)
 
 ---
 
@@ -1278,3 +1287,318 @@ Phần này đi qua **từng dòng / từng câu lệnh theo đúng thứ tự t
 - **`Dòng 179–188` (Bước `[5]` — Tính bí mật chung):** Đo thời gian `t_dh0..t_dh1`, Alice tính `s_alice = modular_exponentiation(B, a, p)`, Bob tính `s_bob = modular_exponentiation(A, b, p)`, in `s_A`, `s_B` và thời gian tính `time_dh`.
 - **`Dòng 191–198` (Chốt kiểm tra 4 — Xác minh cuối cùng):** Kiểm tra `matched = (s_alice == s_bob) && (s_alice > big_t::from_u64(1))` (loại cả trường hợp suy biến `0` và `1`). Nếu `matched` đúng, in `[XAC MINH THANH CONG] Bi mat chung hai ben hoan toan TRUNG KHOP!`, ngược lại in thông báo thất bại.
 - **`Dòng 200` (`return 0;`):** Kết thúc chương trình thành công.
+
+---
+
+# PHẦN 4: NGÂN HÀNG CÂU HỎI VẤN ĐÁP TOÀN DIỆN (72 CÂU TỪ TỔNG QUAN ĐẾN HỎI XOÁY)
+
+Phần này tổng hợp **72 câu hỏi thực chiến** theo mức độ từ bao quát nhất (tổng quan dự án, cái làm được / chưa làm được, làm việc nhóm) đến sâu nhất (tư duy thiết kế, chi tiết code, toán học mật mã, kiểm thử, debug và các câu hỏi "bẫy"). Hãy luyện trả lời thành tiếng từng câu theo công thức **3 bước: Khẳng định trực tiếp → Giải thích nguyên nhân → Dẫn chứng đúng file/số liệu trong bài**.
+
+---
+
+## 4.1. Nhóm 1 — Tổng quan Dự án, Kết quả, Hạn chế & Làm việc nhóm (10 câu)
+
+> **C1.1: Ở đồ án này, nhóm em đã làm được những gì?**
+> - **Đáp:** Nhóm hoàn thành **100% các yêu cầu bắt buộc lẫn mục điểm cộng** bằng thuần C++14 (không dùng thư viện số lớn ngoài), gồm 6 kết quả chính:
+>   1. **Thư viện số nguyên lớn `big_t` (2048-bit tĩnh trên Stack):** Đầy đủ chuyển đổi Hex/Dec (`to_dec` chia $10^{18}$), so sánh, `+`, `-`, `*` (Schoolbook dùng `uint128_t`), dịch bit, `mod_small` (Horner), và **phép chia Knuth Algorithm D** nhanh hơn chia nhị phân ~160 lần (`0.44 µs` vs `72 µs` cho `mulmod` 512-bit).
+>   2. **CSPRNG đa nền tảng (`prng.cpp` + `fips202.cpp`):** Port `randombytes()` sang Windows bằng `rand_s()` song song `getrandom()` Linux, vá 2 lỗi của code mẫu (`uint8_t outlen` và UB dịch bit `buf[3] << 24`), nạp 256-bit entropy vào Keccak SHAKE128.
+>   3. **Kiểm tra nguyên tố & Sinh Safe Prime 4 tầng (`prime.cpp`):** Rejection Sampling loại 100% modulo bias, Miller-Rabin (`k = 40`, sai số $\le 4^{-40}$), sàng đồng thời 302 số nguyên tố lẻ `< 2000` (loại 98.56%), MR cơ sở 2 sơ bộ → sinh Safe Prime 512-bit trung bình **~0.26–0.85s**, 1024-bit **~1.58–4.52s**.
+>   4. **Giao thức Diffie-Hellman hoàn chỉnh (`dh.cpp` + `main.cpp`):** Square-and-Multiply Left-to-Right (`0.24 ms` cho 512-bit), cài thêm bộ đối chiếu `AddMod`/`MultMod`/`ExpMod` theo pseudocode thầy, chọn phần tử sinh `g = 4` bậc nguyên tố `q` (chống rò rỉ Legendre), xác thực khóa công khai `is_valid_public_value` (chống tấn công nhóm con nhỏ), giao diện CLI linh hoạt (`--bits`, `--rounds`, `--seed`, `--help`).
+>   5. **Kiểm thử nghiêm ngặt:** 3 bộ unit test C++ + 3 bộ crosscheck đối chiếu với Python (> 80.000 phép toán `+ - * / % pow`, 0 sai lệch) + benchmark thực nghiệm.
+>   6. **Báo cáo 27 trang (`report.pdf`):** Đầy đủ 6 mục, bao gồm cả Mục 3 điểm cộng về số ngẫu nhiên.
+>
+> **C1.2: Vậy còn những gì nhóm CHƯA làm được hoặc còn hạn chế?**
+> - **Đáp:** Nhóm nhìn nhận thẳng thắn 5 hạn chế (đã trình bày chi tiết trong Mục 6 báo cáo):
+>   1. **Chưa chống tấn công kênh kề thời gian / năng lượng (Timing / SPA):** `modular_exponentiation` có nhánh `if (exp.test_bit(i))` và `is_probable_prime` có early-exit phụ thuộc dữ liệu bí mật (chưa dùng Montgomery Ladder constant-time).
+>   2. **Chưa song song hóa đa luồng:** `generate_safe_prime` chạy 1 luồng đơn; ở 512–1024 bit rất nhanh nhưng nếu mở rộng lên 2048–4096 bit sẽ chờ lâu hơn.
+>   3. **Chưa cài phép nhân Montgomery:** Mỗi vòng trong `modular_exponentiation` vẫn gọi phép chia Knuth D `O(n^2)` thay vì rút gọn Montgomery không cần chia.
+>   4. **Chưa có cơ chế tự động reseeding cho SHAKE128** sau ngưỡng byte lớn (dù cho 1 phiên DH là dư sức an toàn với `capacity = 256` bit).
+>   5. **Chưa có xác thực danh tính và dẫn xuất khóa (KDF):** Là DH thuần túy nên chưa chống MitM (cần chữ ký số/CA như TLS 1.3) và in trực tiếp bí mật chung `s` (thực tế cần đưa qua HKDF để sinh khóa AES).
+>
+> **C1.3: Trong toàn bộ đồ án, điểm nào nhóm tâm đắc nhất?**
+> - **Đáp:** Có 3 điểm kỹ thuật nổi bật nhất:
+>   1. **Phép chia Knuth Algorithm D** giúp tăng tốc `mulmod` ~160 lần và đã viết riêng stress test kích hoạt nhánh cộng bù siêu hiếm (xác suất $\approx 2 / 2^{64}$) hơn 3.200 lần với 0 sai lệch.
+>   2. **Sàng đồng thời 4 tầng cho Safe Prime:** chỉ cần 1 phép `mod_small(q, r)` kiểm tra đồng thời `q` và `p = 2q + 1`, loại 98.56% ứng viên và giảm số lần chạy 40 vòng Miller-Rabin xuống đúng **1 lần duy nhất**.
+>   3. **Chọn phần tử sinh `g = 4` bậc `q` + kiểm tra `is_valid_public_value`:** xử lý triệt để hai lỗ hổng mật mã thực tế là rò rỉ bit chẵn/lẻ qua Legendre symbol và tấn công nhóm con nhỏ (Lim–Lee).
+>
+> **C1.4: Riêng cá nhân em (Vương Hữu Khang) đã trực tiếp đảm nhận những phần nào?**
+> - **Đáp:** Em trực tiếp phụ trách:
+>   - Thiết kế kiến trúc tổng thể Unity Build 6 file `.cpp` và chuẩn hóa hợp đồng giao diện giữa các module.
+>   - Toàn bộ phần nền tảng của `bigint.cpp` (dòng 1–348): cấu trúc `uint_t<N>`, `big_t`, chuyển đổi `from_u64`/`from_hex`/`to_hex`/`to_dec`, tiện ích bit (`bit_length`, `test_bit`, `set_bit`), so sánh, `+`, `-`, `*` (Schoolbook 128-bit), `<<`, `>>`, và `mod_small`.
+>   - Cài đặt bộ 3 hàm `AddMod`, `MultMod`, `ExpMod` trong `dh.cpp` theo tài liệu `pseudocode-modular-operation.pdf` của thầy để đối chiếu.
+>   - Xây dựng khung `main.cpp` (xử lý CLI `--bits`, `--rounds`, `--seed`, đo thời gian, điều phối luồng DH), viết bộ test `test_bigint.cpp` và `crosscheck_bigint`.
+>   - Soạn Mục 1 (chính), Mục 5, tổng hợp Mục 6 và xuất báo cáo `report.pdf` + kiểm tra đóng gói `.zip`.
+>
+> **C1.5: Nhóm 3 người làm việc chung như thế nào để code không bị xung đột (conflict) hay lỗi khi ghép lại?**
+> - **Đáp:** Nhóm chia việc rõ theo **file và vùng trách nhiệm** trên GitHub (nhánh `main` bảo vệ, Mạnh làm trên `feature/diffie-hellman`, Minh làm trên `feature/prng-prime`). Trước khi code, nhóm thống nhất trước toàn bộ chữ ký hàm (function signature) và kiểu `big_t`. Mọi đóng góp đều mở **Pull Request**, phải qua bước review code, biên dịch sạch `-std=c++14 -O2 -Wall -Wextra -Wpedantic` (0 warning) và pass 100% unit test + crosscheck mới được merge vào `main`.
+>
+> **C1.6: Trong quá trình làm có thấy nhắc tới script Python (`crosscheck_bigint.py`), vậy có vi phạm quy định "lập trình hoàn toàn bằng C++" không?**
+> - **Đáp:** **Hoàn toàn không.** Toàn bộ chương trình nộp trong `project_01_source/*.cpp` là **100% thuần C++14**, không phụ thuộc bất kỳ file Python nào. Python chỉ được dùng làm **đáp án chuẩn (Oracle)** bên ngoài (trong thư mục `tests/` nội bộ, không đưa vào file `.zip` nộp bài) để sinh hàng chục nghìn phép toán ngẫu nhiên đối chiếu tính đúng đắn của thư viện `big_t` và `modular_exponentiation`.
+>
+> **C1.7: Nếu có thêm 1 tuần để nâng cấp đồ án, em sẽ ưu tiên làm gì trước nhất và tại sao?**
+> - **Đáp:** Em sẽ ưu tiên 2 việc theo thứ tự tác động:
+>   1. **Về bảo mật:** Đổi `modular_exponentiation` sang **Montgomery Ladder** (constant-time) để bịt lỗ hổng kênh kề thời gian (Timing/SPA), và thu hẹp khoảng khóa riêng về `[2, q - 1]`.
+>   2. **Về hiệu năng:** Cài **Incremental Sieve** (cập nhật bảng dư trong `O(1)` thay vì gọi lại `mod_small`) kết hợp đa luồng `std::thread` để rút ngắn thời gian sinh safe prime 2048-bit xuống chỉ còn vài giây.
+>
+> **C1.8: Chương trình có chạy đa nền tảng được không? Nhóm xử lý khác biệt Windows vs Linux ở đâu?**
+> - **Đáp:** Chạy mượt trên cả Windows (MSYS2 MinGW-w64) và Linux/WSL với cùng 1 lệnh `g++ -std=c++14 -O2 -Wall -Wextra -Wpedantic -o dh main.cpp`. Điểm khác biệt duy nhất giữa 2 HĐH nằm ở hàm lấy entropy hệ điều hành `randombytes()` trong `prng.cpp`: dùng tiền xử lý `#ifdef _WIN32` gọi `rand_s()` (kèm `#define _CRT_RAND_S` ở đầu `main.cpp` và khai báo `_CRTIMP`), còn nhánh `#else` trên Linux/macOS gọi syscall `getrandom()`.
+>
+> **C1.9: So với chương trình mẫu trong `Lab01.pdf`, nhóm đã cải tiến những gì?**
+> - **Đáp:** (1) Thay `g = 2` cố định trong mẫu bằng `choose_generator(p)` chọn `g = 4` sinh nhóm con bậc `q`; (2) Bổ sung xác thực khóa công khai `is_valid_public_value(A, p)` & `is_valid_public_value(B, p)` mà mẫu chưa có; (3) Hỗ trợ CLI `--bits`, `--rounds`, `--seed` không cần sửa code khi đổi độ lớn bit; (4) Tối ưu tốc độ vượt trội bằng Knuth D + sàng đồng thời 4 tầng; (5) Vá lỗi UB và port đa nền tảng cho CSPRNG mẫu.
+>
+> **C1.10: Báo cáo có Mục 3 là mục điểm cộng, nhóm đã trình bày gì trong đó?**
+> - **Đáp:** Mục 3 phân tích toàn diện: vai trò cốt lõi của tính ngẫu nhiên theo nguyên lý Kerckhoffs; bảng so sánh TRNG/PRNG/CSPRNG; lý do tuyệt đối cấm `rand()` và `std::mt19937`; kiến trúc CSPRNG 2 tầng (OS entropy + Keccak Sponge SHAKE128 với `r = 1344, c = 256`); kỹ thuật Rejection Sampling triệt tiêu modulo bias; và 3 sự cố bảo mật lịch sử thực tế (Debian OpenSSL CVE-2008-0166, Mining Your Ps and Qs 2012, Dual_EC_DRBG).
+
+---
+
+## 4.2. Nhóm 2 — Tư duy Thiết kế & Kiến trúc Hệ thống (8 câu)
+
+> **C2.1: Khi nhận đề bài, tư duy phân rã bài toán của nhóm đi theo thứ tự nào?**
+> - **Đáp:** Đi theo kiến trúc **từ dưới lên (bottom-up)** gồm 4 lớp độc lập:
+>   - **Lớp 1 (Nền tảng ngẫu nhiên):** `fips202.cpp` + `prng.cpp` — cung cấp luồng bit ngẫu nhiên chuẩn mật mã.
+>   - **Lớp 2 (Số học đa độ chính xác):** `bigint.cpp` — cung cấp kiểu `big_t` và các phép toán `+ - * / % << >> mod_small`.
+>   - **Lớp 3 (Thuật toán mật mã cốt lõi):** `dh.cpp` (lũy thừa mô-đun, chọn `g`, xác thực `V`) và `prime.cpp` (Rejection Sampling, Miller-Rabin, Safe Prime).
+>   - **Lớp 4 (Điều phối & CLI):** `main.cpp` — ghép luồng trao đổi khóa, kiểm tra phòng thủ, đo thời gian và in kết quả.
+>
+> **C2.2: Tại sao chọn mảng tĩnh `uint64_t digits[N]` (template) thay vì `std::vector<uint64_t>`? Trade-off là gì?**
+> - **Đáp:** **Được:** Cấp phát hoàn toàn trên Stack, 0 lần gọi `malloc`/`free`, liên tục trên bộ nhớ (cache locality cực tốt), tốc độ vòng lặp Miller-Rabin tăng gấp nhiều lần. **Đánh đổi:** Kích thước tối đa cố định lúc biên dịch (`MAX_PRIME_BITS = 1024`), muốn sinh 2048-bit phải sửa 1 hằng số và biên dịch lại. Với phạm vi Lab01 (512–1024 bit), trade-off này hoàn toàn tối ưu.
+>
+> **C2.3: Điều gì xảy ra nếu ta đặt nhầm `BIG_LIMBS = MAX_PRIME_BITS / 64` (tức `big_t` chỉ rộng 1024 bit) rồi chạy với `p` 1024-bit?**
+> - **Đáp:** Trong `modular_exponentiation`, phép nhân `result * result` tạo ra tích lên tới **2048 bit** trước khi lấy `% mod`. Nếu `big_t` chỉ rộng 1024 bit, 1024 bit cao của tích sẽ bị cắt cụt (mod $2^{1024}$) dẫn đến `(result * result) % mod` **sai hoàn toàn**, kéo theo Miller-Rabin và Diffie-Hellman đều hỏng! Do đó bắt buộc `BIG_LIMBS = 2 * MAX_PRIME_BITS / 64`.
+>
+> **C2.4: Tại sao dùng cơ số $2^{64}$ (`uint64_t`) kết hợp `uint128_t` mà không dùng cơ số $10^9$ hay $2^{32}$?**
+> - **Đáp:**
+>   - So với cơ số $10^9$: các phép dịch bit `<<`, `>>`, `test_bit`, `set_bit`, `is_odd`, sinh bit ngẫu nhiên trong mật mã đều làm việc trực tiếp trên nhị phân; dùng cơ số $10^9$ khiến mọi thao tác bit trở nên cực kỳ chậm và phức tạp.
+>   - So với cơ số $2^{32}$ (`uint32_t`): với số 512-bit, cơ số $2^{32}$ cần 16 limb (phép nhân tốn $16^2 = 256$ phép nhân con), trong khi cơ số $2^{64}$ chỉ cần **8 limb** (tốn $8^2 = 64$ phép nhân con) — giảm **4 lần** số phép nhân và tận dụng trực tiếp lệnh `MUL` 64×64→128 bit phần cứng của CPU x86_64!
+>
+> **C2.5: Tại sao lưu trữ `digits[]` theo Little-Endian (limb thấp ở chỉ số 0) thay vì Big-Endian?**
+> - **Đáp:** Với Little-Endian: (1) `digits[0]` luôn là phần thấp nhất nên `is_odd()` chỉ là `digits[0] & 1`, `from_u64(v)` chỉ là `digits[0] = v` bất kể kích thước `N`; (2) `test_bit(i)` tính trực tiếp `limb = i / 64` không cần trừ ngược `N - 1 - i/64`; (3) Phép cộng, trừ, nhân đều lan truyền nhớ `carry` tự nhiên theo chiều tăng chỉ số `i = 0 -> N - 1`, và chỉ số tích `i + j` cực kỳ trong sáng.
+>
+> **C2.6: Tại sao không gộp hết tất cả vào 1 file `main.cpp` dài 2.300 dòng cho đơn giản?**
+> - **Đáp:** Tách 6 file theo chức năng giúp 3 thành viên làm việc song song trên Git không bị merge conflict, dễ đọc, dễ viết unit test độc lập cho từng module (`test_bigint.cpp` chỉ cần `#include "bigint.cpp"`), mà vẫn giữ được trải nghiệm biên dịch 1 lệnh duy nhất nhờ mô hình Unity Build.
+>
+> **C2.7: Tại sao `prng_ctx` lại truyền bằng con trỏ vào từng hàm (`generate_safe_prime(&ctx, ...)`) thay vì khai báo 1 biến toàn cục `g_prng`?**
+> - **Đáp:** Tránh trạng thái ẩn toàn cục (global mutable state): (1) Unit test có thể tạo nhiều ngữ cảnh PRNG độc lập với các seed khác nhau mà không đè lên nhau; (2) Sẵn sàng cho mở rộng đa luồng (`std::thread`), mỗi luồng giữ 1 `prng_ctx` riêng mà không cần khóa `mutex`.
+>
+> **C2.8: Tại sao trong `main.cpp` lại phải thêm tới 4 chốt kiểm tra phòng thủ (`p.bit_length()`, `g_ok`, `pub_ok`, `matched > 1`)?**
+> - **Đáp:** Theo nguyên tắc lập trình phòng thủ (Defensive Programming) trong mật mã học: một lỗi ngầm ở hàm con (như `p` bị hụt còn 511 bit, `p` không phải safe prime, `A` rơi vào nhóm con nhỏ, hay hàm chưa cài trả `0 == 0`) tuyệt đối không được phép âm thầm cho ra thông báo "thành công". Bốn chốt kiểm tra độc lập đảm bảo hễ có sai sót ở bất kỳ tầng nào là dừng và báo lỗi ngay lập tức.
+
+---
+
+## 4.3. Nhóm 3 — BigInt, Phép chia Knuth D & Số học Mô-đun (12 câu)
+
+> **C3.1: Trình bày tư duy cải tiến từ chia nhị phân lên Knuth Algorithm D — tại sao nhanh hơn tới ~160 lần?**
+> - **Đáp:** Chia nhị phân (shift-subtract) xử lý **1 bit mỗi vòng** — với số bị chia 1024-bit và số chia 512-bit phải lặp 1024 lượt so sánh/trừ cả số lớn (`O(k * N)`). Knuth Algorithm D nâng lên cơ số $B = 2^{64}$, mỗi vòng tính thẳng **1 limb 64-bit của thương** (chỉ cần `16 - 8 + 1 = 9` vòng lặp ngoài thay vì 1024 vòng!), dùng phép chia phần cứng 128÷64 bit ước lượng thương thử $\hat{q}$, nên độ phức tạp giảm về `O(n * (m - n + 1))` (`O(n^2)` khi rút gọn tích $2n$ limb theo $p$ có $n$ limb).
+>
+> **C3.2: Nếu bỏ bước D1 (Chuẩn hóa dịch trái `s` bit) trong Knuth D thì chuyện gì xảy ra?**
+> - **Đáp:** Nếu limb cao nhất của số chia `v[n-1]` quá nhỏ (ví dụ `v[n-1] = 1`), thì ước lượng $\hat{q} = \lfloor (u_{j+n} B + u_{j+n-1}) / v_{n-1} \rfloor$ có thể sai lệch so với thương thật tới hàng tỷ tỷ đơn vị thay vì tối đa 2 đơn vị! Khi đó vòng hiệu chỉnh `while` và nhánh cộng bù không còn đảm bảo chạy trong `O(1)` nữa mà có thể lặp hàng tỷ lần hoặc tràn 64-bit. Nhờ chuẩn hóa sao cho $v_{n-1} \ge 2^{63}$, định lý Knuth đảm bảo $q \le \hat{q} \le q + 2$.
+>
+> **C3.3: Ý nghĩa của bước hiệu chỉnh thứ hai `q_hat * v_lo > ((r_hat << 64) | u[j + n - 2])` ở dòng 435 `bigint.cpp` là gì?**
+> - **Đáp:** Bước ước lượng ban đầu mới xét 2 limb cao của `u` chia cho 1 limb cao của `v` (bỏ qua phần đuôi `v[n-2]` và `u[j+n-2]`). Bất đẳng thức dòng 435 chính là phép kiểm tra lại với **3 limb cao của `u` so với 2 limb cao của `v`**: nếu `q_hat * (v_hi * B + v_lo) > u[j+n]*B^2 + u[j+n-1]*B + u[j+n-2]`, thì `q_hat` chắc chắn quá lớn. Sau bước này (chạy tối đa 2 lần), xác suất `q_hat` vẫn thừa 1 đơn vị tụt xuống chỉ còn $\approx 2 / 2^{64}$!
+>
+> **C3.4: Tại sao ở bước D4 của Knuth D (dòng 449–455) lại tách phép trừ thành 2 nhịp `b1` và `b2` rồi `borrow = b1 | b2`?**
+> - **Đáp:** Vì cả `p_lo` và `borrow` đều là `uint64_t`. Nếu viết gộp `p_lo + borrow`, khi `p_lo = 2^64 - 1` và `borrow = 1` sẽ bị tràn vòng 64-bit về `0`! Tách thành `t = x - p_lo` (mượn `b1 = (x < p_lo)`) rồi `t2 = t - borrow` (mượn `b2 = (t < borrow)`) thì hai điều kiện mượn không bao giờ xảy ra sai tràn, và tổng mượn chỉ là `0` hoặc `1` (không bao giờ cả `b1` và `b2` cùng bằng `1`, vì khi `b2 = 1` thì phải có `t = 0` và `borrow = 1`, suy ra `x == p_lo`, tức `b1 = 0`!), nên `b1 | b2` là hoàn toàn chính xác!
+>
+> **C3.5: Nếu người gọi viết `divmod(a, b, a, r)` (tham số ra `q` trùng địa chỉ với tham số vào `a` — aliasing) thì có bị hỏng dữ liệu không?**
+> - **Đáp:** Không! Vì dòng 370 `bigint.cpp` tính toàn bộ kết quả vào 2 biến cục bộ `quo, rem`, đến tận dòng 488–489 (khi đã đọc xong hoàn toàn `a` và `b`) mới gán `q = quo; r = rem;`.
+>
+> **C3.6: So sánh `ExpMod` (pseudocode của thầy) và `modular_exponentiation` (của nhóm) — khi nào nên dùng cái nào?**
+> - **Đáp:**
+>   - `ExpMod` (dùng `MultMod` Double-and-Add + `AddMod`): **ưu điểm** là mọi biến trung gian luôn nằm gọn trong `n` bit (phù hợp phần cứng nhúng / smartcard bị ép chặt bộ nhớ thanh ghi đúng `n` bit); **nhược điểm** là mỗi phép nhân phải lặp `n` lượt gọi `AddMod`, chậm hơn nhiều (~62.8 ms vs 0.24 ms sau khi tối ưu Knuth D).
+>   - `modular_exponentiation` (dùng bộ đệm `2n` bit + nhân Schoolbook 128-bit + Knuth D): **ưu điểm** cực nhanh trên CPU 64-bit; **nhược điểm** tốn bộ nhớ gấp đôi (`2n` bit thay vì `n` bit).
+>
+> **C3.7: Trong `AddMod(x, y, p)` (dòng 28 `dh.cpp`), tại sao viết `if (x >= p - y) return x - (p - y);` thay vì `if (x + y >= p) return x + y - p;`?**
+> - **Đáp:** Vì nếu `x` và `y` đều gần `p` và `p` gần $2^n$ (độ rộng thanh ghi `n` bit), phép cộng `x + y` sẽ bị **tràn bộ nhớ `n` bit** (wrap-around) TRƯỚC KHI kịp so sánh với `p`! Viết `p - y` đảm bảo luôn nằm trong `[1, p]` không bao giờ tràn, rồi so `x >= p - y` an toàn tuyệt đối.
+>
+> **C3.8: Trong `operator*` (dòng 260–268 `bigint.cpp`), nếu bỏ 2 vòng cắt `len_a`, `len_b` thì sao?**
+> - **Đáp:** Kết quả vẫn đúng, nhưng hiệu năng giảm mạnh! Vì `big_t` rộng 32 limbs (2048 bit) trong khi số 512-bit chỉ chiếm 8 limbs đầu (24 limb trên toàn số 0). Cắt `len_a`, `len_b` giảm số lần lặp từ $32^2 = 1024$ xuống $8^2 = 64$ (**nhanh gấp 16 lần** cho 512-bit, **4 lần** cho 1024-bit), và bỏ qua các limb giữa bằng `0` nhờ `if (a.digits[i] == 0) continue;`.
+>
+> **C3.9: Tại sao `mod_small(a, m)` nhanh hơn `a % big_t::from_u64(m)` rất nhiều dù cùng trả về số dư?**
+> - **Đáp:** `mod_small` chỉ cần duy nhất 1 biến `uint128_t rem`, duyệt thẳng `top..0` (8 phép chia phần cứng cho 512-bit) mà không cần tạo 2 struct `big_t` tạm (`quo`, `rem` mỗi cái 256 byte trên Stack) và không cần bước so sánh `a < b` hay ghi thương `quo.digits[i]`. Trong sàng 302 số nguyên tố chạy cho hàng chục nghìn ứng viên, tiết kiệm này rất đáng kể.
+>
+> **C3.10: Điều gì xảy ra nếu bỏ `assert(mod.bit_length() <= MAX_PRIME_BITS)` ở dòng 98 `dh.cpp` rồi truyền `mod` dài 1500-bit vào?**
+> - **Đáp:** Vì `big_t` chỉ rộng 2048 bit, khi `result` cỡ 1500-bit, `result * result` dài 3000-bit sẽ bị tràn và cắt cụt lặng lẽ ở bit 2048 trong `operator*`, làm `modular_exponentiation` trả ra kết quả **sai hoàn toàn** mà không báo lỗi. `assert` giúp phát hiện vi phạm tiền điều kiện ngay lập tức.
+>
+> **C3.11: So sánh Square-and-Multiply Left-to-Right (`modular_exponentiation`) và Right-to-Left (`ExpMod`)?**
+> - **Đáp:** Số phép bình phương (`k`) và số phép nhân (bằng trọng số Hamming của `exp`, trung bình `k/2`) của cả 2 thuật toán là **bằng nhau**. Khác nhau: Left-to-Right luôn nhân với **cơ sở gốc `b` không đổi** (nếu `b` nhỏ như `g = 4` hoặc `a = 2` trong `miller_rabin_base2` thì phép nhân `result * b` chỉ là nhân với 1 limb — cực nhanh!), còn Right-to-Left phải cập nhật `base = base^2 % mod` nên `base` nhanh chóng phình thành số đầy đủ `n` limb.
+>
+> **C3.12: Làm sao tăng tốc `modular_exponentiation` thêm 2–3 lần nữa mà không đổi cấu trúc `big_t`?**
+> - **Đáp:** Hai kỹ thuật kinh điển trong *Handbook of Applied Cryptography*:
+>   1. **Montgomery Multiplication (CIOS):** Biến đổi số vào miền Montgomery ($x \mapsto x R \bmod m$ với $R = 2^{64n}$), thay mỗi phép chia lấy dư Knuth D bằng phép rút gọn Montgomery chỉ tốn phép nhân và dịch bit.
+>   2. **Sliding Window / Fixed Window Exponentiation (cửa sổ `w` bit, VD `w = 4`):** Tiền tính các lũy thừa lẻ $b^1, b^3, \dots, b^{2^w-1} \bmod m$, giảm số phép nhân từ `k/2` xuống còn khoảng `k / (w + 1)` (với `w = 4` giảm hơn 2 lần số phép nhân!).
+
+---
+
+## 4.4. Nhóm 4 — Số nguyên tố, Miller-Rabin & Sinh Safe Prime (11 câu)
+
+> **C4.1: Nếu bỏ từng tầng trong pipeline 4 tầng của `generate_safe_prime` thì hiệu năng thay đổi thế nào?**
+> - **Đáp:**
+>   - **Bỏ Tầng 1 (Sàng 302 số nguyên tố nhỏ):** Số ứng viên phải chạy Miller-Rabin cơ sở 2 tăng gấp **~70 lần** (vì sàng loại tới 98.56%), thời gian sinh 512-bit sẽ tăng từ ~0.4s lên ~15–20 giây!
+>   - **Bỏ Tầng 2–3 (MR cơ sở 2 trên `q` và `p`):** Mọi ứng viên qua sàng (~840 số cho 512-bit) đều phải vào `is_probable_prime(40 vòng)` và mỗi số hợp số tuy thường rớt ngay vòng 1 nhưng vẫn tốn thêm chi phí gọi `random_range` sinh cơ sở ngẫu nhiên; đặc biệt với ~34 số `q` nguyên tố thực sự (nhưng `p = 2q + 1` là hợp số), nếu chạy đủ 40 vòng cho `q` trước rồi mới phát hiện `p` hợp số thì lãng phí **34 × 39 = 1.326 vòng lũy thừa mô-đun**! Nhờ Tầng 2–3, ta chỉ chạy đủ 40 vòng **đúng 1 lần duy nhất**!
+>
+> **C4.2: Chứng minh tại sao `q % r == (r - 1) / 2` tương đương với `p = 2q + 1` chia hết cho `r`?**
+> - **Đáp:** Với mọi số nguyên tố lẻ `r >= 3`, ta có $\gcd(2, r) = 1$ nên `2` có nghịch đảo modulo `r` (và `r - 1` là số chẵn). Khi đó: $r \mid p \iff 2q + 1 \equiv 0 \pmod r \iff 2q \equiv r - 1 \pmod r \iff q \equiv (r - 1)/2 \pmod r$. Vì phép chia hai vế cho `2` theo modulo `r` là phép biến đổi tương đương hai chiều khi $\gcd(2, r) = 1$.
+>
+> **C4.3: Tại sao bảng `SMALL_PRIMES` lấy đến `2000` (302 số) mà không lấy đến `100` hay `100.000`?**
+> - **Đáp:** Theo công thức tích kiểu Mertens cho cặp `(q, 2q + 1)`, tỷ lệ ứng viên sống sót sau khi sàng các số nguyên tố lẻ `<= B` là $\prod_{3 \le r \le B} (1 - 2/r) \approx O(1 / \ln^2 B)$. Tỷ lệ lọc tăng rất nhanh ở các số nguyên tố nhỏ đầu tiên (đến 2000 đã loại **98.56%**) rồi **giảm lợi ích biên (diminishing returns)** rất mạnh: tăng từ 2000 lên 20.000 tốn gấp 7 lần số phép `mod_small` nhưng chỉ loại thêm được chưa đầy 0.5%! Vì vậy ngưỡng `2000` là điểm cân bằng (sweet spot) rất đẹp giữa chi phí sàng và chi phí MR cơ sở 2.
+>
+> **C4.4: Dòng 341 `prime.cpp`: `if (bitsize <= 12 && r >= (1U << (bitsize - 2))) break;` giải quyết lỗi gì?**
+> - **Đáp:** Vì `q` dài `bitsize - 1` bit nên giá trị nhỏ nhất của `q` là $2^{\text{bitsize}-2}$. Khi `bitsize <= 12` (VD `bitsize = 10` ⇒ `q` trong `[256, 511]`), bảng `SMALL_PRIMES` có các số `r` lớn hơn `256` (như `257, 263, ...`). Nếu tình cờ sinh trúng `q = 257` (là số nguyên tố thật!), phép `q % 257 == 0` sẽ **loại nhầm chính số nguyên tố `q`**! Dòng 341 dừng sàng khi `r` đạt tới cận dưới của `q` để không bao giờ loại nhầm.
+>
+> **C4.5: Chứng minh tại sao trong Miller-Rabin, nếu thấy $x^2 \equiv 1 \pmod n$ mà $x \not\equiv \pm 1 \pmod n$ thì `n` CHẮC CHẮN là hợp số?**
+> - **Đáp:** Ta có $x^2 - 1 = (x - 1)(x + 1) \equiv 0 \pmod n$, nghĩa là `n | (x - 1)(x + 1)`. Nếu `n` là số nguyên tố, theo bổ đề Euclid thì `n` phải chia hết cho `x - 1` (tức $x \equiv 1 \pmod n$) hoặc `n` chia hết cho `x + 1` (tức $x \equiv -1 \pmod n$). Cả hai điều này đều trái giả thiết $x \not\equiv \pm 1 \pmod n$ ⇒ **mâu thuẫn**, vậy `n` chắc chắn là hợp số (thậm chí $\gcd(x - 1, n)$ là một ước thực sự của `n`!).
+>
+> **C4.6: Tại sao trong Miller-Rabin phải rút hết lũy thừa của 2 từ `n - 1` (viết $n - 1 = 2^s \cdot d$ với `d` lẻ)?**
+> - **Đáp:** Để tạo ra chuỗi bình phương tối đa `s` bước đi từ $a^d$ lên đến $a^{n-1} = a^{2^s d}$. Nếu không rút hết 2 (để `d` vẫn chẵn), ta sẽ bỏ lỡ các bước kiểm tra căn bậc hai không tầm thường của `1` ở đầu chuỗi, làm tăng số lượng "nhân chứng giả" và phá vỡ cận sai số $4^{-k}$ của định lý Monier–Rabin.
+>
+> **C4.7: "Sai số một phía (one-sided error)" của Miller-Rabin nghĩa là gì?**
+> - **Đáp:** Nghĩa là:
+>   - Nếu `n` là **số nguyên tố thật**: thuật toán **LUÔN trả về `true`** (xác suất sai = 0%).
+>   - Nếu `n` là **hợp số**: thuật toán có thể trả nhầm `true` với xác suất $\le 4^{-k}$, nhưng một khi đã trả về `false` thì **100% chắc chắn là hợp số**.
+>
+> **C4.8: Tại sao chọn mặc định `rounds = 40`? Nếu đặt `rounds = 5` hoặc `rounds = 200` thì sao?**
+> - **Đáp:** Chuẩn công nghiệp (NIST FIPS 186-5, OpenSSL, Cryptography textbooks) khuyến nghị `k = 40` vòng cho mật mã khóa công khai vì $4^{-40} = 2^{-80}$ (với ứng viên ngẫu nhiên 512-bit xác suất sai thực tế nhỏ hơn $2^{-160}$). Nếu đặt `k = 5`, cận xấu nhất chỉ là $4^{-5} \approx 0.1\%$ (không đủ an toàn trước ứng viên bị thao túng). Nếu đặt `k = 200`, độ an toàn tăng thêm không có ý nghĩa thực tế nhưng thời gian bước xác nhận Tầng 4 tăng gấp 5 lần (dù trong kiến trúc 4 tầng của nhóm, Tầng 4 chỉ chạy đúng 1 lần nên `rounds = 200` cũng chỉ cộng thêm `~0.1 giây` cho 512-bit!).
+>
+> **C4.9: Phân biệt Số nguyên tố an toàn (Safe Prime) và Số nguyên tố mạnh (Strong Prime)?**
+> - **Đáp:**
+>   - **Safe Prime:** $p = 2q + 1$ với `q` nguyên tố (dùng chủ yếu trong **Diffie-Hellman / ElGamal** để cấp nhóm $p - 1 = 2q$ không có ước nhỏ, chống Pohlig-Hellman).
+>   - **Strong Prime (dùng trong RSA cổ điển):** `p` nguyên tố sao cho `p - 1` có ước nguyên tố lớn `r`, `p + 1` có ước nguyên tố lớn `s`, và `r - 1` có ước nguyên tố lớn `t` (để chống thuật toán phân tích thừa số Pollard `p - 1` và Williams `p + 1`). Đề bài Lab01 yêu cầu chính xác **Safe Prime** ($p$ và $(p-1)/2$ cùng nguyên tố).
+>
+> **C4.10: Tại sao trong benchmark 1024-bit, lần 1 mất `12.48s` còn lần 2 chỉ mất `0.39s`? Có phải thuật toán bị lỗi không?**
+> - **Đáp:** Hoàn toàn bình thường về mặt thống kê! Việc chọn ứng viên `q` ngẫu nhiên độc lập là **chuỗi phép thử Bernoulli** có xác suất thành công $P \approx O(1 / \ln^2 p)$ (theo giả thuyết Hardy–Littlewood về mật độ số nguyên tố Sophie Germain). Số phép thử cho đến khi gặp cặp `(q, p)` đầu tiên tuân theo **phân bố hình học (Geometric Distribution)**, có độ lệch chuẩn bằng đúng giá trị trung bình ($\sigma \approx \mu$) — tức phương sai rất lớn, nên có lần gặp ngay sau ~1.300 ứng viên (`0.39s`), có lần phải thử ~240.000 ứng viên (`12.48s`), trung bình dài hạn hội tụ quanh ~4.5s.
+>
+> **C4.11: Ở dòng 433 `prime.cpp`, nếu quên dòng `q.set_bit(0);` thì chương trình có chạy sai không?**
+> - **Đáp:** Không sai (vì nếu `q` chẵn, `miller_rabin_base2(q)` sẽ loại ở dòng 365 `!n.is_odd()`), nhưng **sẽ làm chậm gấp đôi** vì 50% ứng viên sinh ra là số chẵn chắc chắn hợp số vẫn phải chạy vòng sàng 302 số nguyên tố nhỏ vô ích trước khi bị loại!
+
+---
+
+## 4.5. Nhóm 5 — PRNG, Entropy, Keccak Sponge & Rejection Sampling (9 câu)
+
+> **C5.1: Mô tả hành trình của 1 bit ngẫu nhiên từ phần cứng máy tính cho đến khi thành khóa riêng `a` của Alice!**
+> - **Đáp:** (1) Phần cứng CPU/thiết bị tạo nhiễu vật lý (jitter xung nhịp, ngắt I/O, `RDRAND`/`RDSEED`) đổ vào **entropy pool** của nhân OS; (2) `main.cpp` gọi `randombytes(seed, 32)` → trên Windows gọi `rand_s()` (`RtlGenRandom`), trên Linux gọi `getrandom()` lấy 256 bit entropy; (3) `prng_seed(&ctx, seed, 32)` hấp thụ 32 byte vào `keccak_state` và đệm `0x1F`; (4) `generate_private_key` gọi `random_range(&ctx, 2, p - 2)` → `random_upto_bits` gọi `prng_next_u64` → `shake128_squeeze` chạy `KeccakF1600_StatePermute` 24 vòng vắt từng khối 64-bit; (5) Rejection Sampling kiểm tra `r <= p - 4`, chấp nhận và cộng `2` ra khóa riêng `a` phân phối đều tuyệt đối trên `[2, p - 2]`.
+>
+> **C5.2: Nhóm đã sửa 2 lỗi nào trong code PRNG mẫu của thầy? Nếu để nguyên thì nguy hiểm ra sao?**
+> - **Đáp:**
+>   1. **Tham số `uint8_t outlen` trong `randombytes`:** Bị giới hạn tối đa 255 byte (gọi với 256 byte bị tràn về `0` — không lấy byte nào!). Đổi sang `size_t outlen`.
+>   2. **`buf[3] << 24` trong `prng_next_u32` (và `u16`):** `buf[3]` là `uint8_t`, tự thăng hạng thành `int` có dấu 32-bit; khi `buf[3] >= 0x80` (xác suất 50%!), dịch trái 24 bit chạm vào bit dấu gây **Undefined Behavior trong C++14** (trình biên dịch `-O2` có quyền tối ưu sai hoặc gây giá trị âm khi mở rộng sang `uint64_t`!). Ép tường minh `static_cast<uint32_t>(buf[i])` trước khi dịch triệt tiêu hoàn toàn UB.
+>
+> **C5.3: Tại sao không gọi `randombytes()` trực tiếp mỗi lần sinh ứng viên `q` mà lại phải thông qua SHAKE128?**
+> - **Đáp:** Ba lý do: (1) **Hiệu năng:** Một lần sinh safe prime 1024-bit cần hàng chục/trăm nghìn ứng viên `q`; gọi syscall hệ điều hành (`getrandom`/`rand_s`) hàng triệu lần sẽ chịu overhead chuyển ngữ cảnh User↔Kernel cực lớn, còn SHAKE128 chạy hoàn toàn trong User-space rất nhanh; (2) **Tính tái lập:** Khi debug bằng `--seed`, chỉ cần truyền 1 seed 32 byte vào SHAKE128 là tái hiện toàn bộ kịch bản; (3) **Độ an toàn tương đương:** 256 bit entropy thật mở rộng qua SHAKE128 đạt chuẩn CSPRNG 128-bit bảo mật.
+>
+> **C5.4: Trong `random_range(ctx, lo, hi)` (dòng 91 `prime.cpp`), nếu lập trình viên gọi nhầm `random_bits(ctx, k)` thay vì `random_upto_bits(ctx, k)` thì hậu quả mật mã học là gì?**
+> - **Đáp:** **Thảm họa bảo mật!** Vì `random_bits(ctx, k)` luôn ép bật bit cao nhất `k - 1` bằng `1`, nên `r` luôn nằm trong `[2^(k-1), 2^k - 1]` — **không bao giờ sinh ra giá trị nào nhỏ hơn `2^(k-1)`**! Không gian khóa riêng bị chặt cụt mất một nửa (nếu `range` gần $2^{k-1}$ thì thậm chí chỉ còn vài giá trị khả dĩ!). Do đó nhóm tách rõ 2 hàm: `random_upto_bits` (không ép bit cao nhất, dùng cho Rejection Sampling) và `random_bits` (ép bit cao nhất = 1, dùng để sinh số nguyên tố đủ độ dài bit).
+>
+> **C5.5: Với `p` 512-bit, nếu dùng `r % (p - 3) + 2` (với `r` 512-bit) thì độ lệch modulo bias có lớn không? Tại sao vẫn phải dùng Rejection Sampling?**
+> - **Đáp:** Với `p` 512-bit gần $2^{511}$, nếu `r` chỉ lấy 512 bit (đến $2^{512}-1$) thì số dư rơi vào `[0, 2^512 - p]` có xác suất xuất hiện **gấp đôi** phần còn lại — độ lệch này có thể lên tới gần **50%** không gian khóa (rất lớn chứ không nhỏ chút nào!). Hơn nữa trong mật mã học hiện đại (như tấn công mạng lưới LLL lên nonce bị lệch vài bit trong ECDSA), mọi bias dù nhỏ đều nguy hiểm; Rejection Sampling chỉ tốn trung bình `< 2` lượt sinh mà cho độ lệch **chính xác bằng 0%**.
+>
+> **C5.6: Trong `fips202.cpp` dòng 626–627, tại sao `shake128_finalize` lại XOR `0x1F` (còn `sha3_256` XOR `0x06`) và đặt `state->pos = SHAKE128_RATE`?**
+> - **Đáp:**
+>   - `0x1F` (`00011111` nhị phân, gồm 4 bit phân tách miền `1111` của SHAKE + bit `1` mở đầu của `pad10*1`) và `0x06` (`00000110`, 2 bit `01` của SHA-3 + bit `1` mở đầu) là **Domain Separation** theo chuẩn NIST FIPS 202, đảm bảo cùng 1 đầu vào nhưng SHAKE128 và SHA3-256 cho ra chuỗi hoàn toàn độc lập.
+>   - Đặt `state->pos = SHAKE128_RATE` (168) là một mẹo lập trình gọn gàng: ở lần gọi `shake128_squeeze` đầu tiên, điều kiện `if (pos == r)` lập tức đúng và kích hoạt `KeccakF1600_StatePermute(s)` trộn toàn bộ seed trước khi xuất byte đầu tiên!
+>
+> **C5.7: Tại sao khi `rand_s()` lỗi ở dòng 64 `prng.cpp`, chương trình gọi `abort()` chứ không fallback về `srand(time(NULL))` để chương trình khỏi crash?**
+> - **Đáp:** Đây là nguyên tắc vàng **Fail-Closed (Đóng an toàn khi lỗi)** trong kỹ thuật bảo mật: nếu nguồn entropy OS gặp sự cố mà âm thầm fallback sang `rand()`/`time(NULL)`, người dùng sẽ tưởng mình có khóa an toàn trong khi thực tế kẻ tấn công phá được khóa trong `< 1 ms`. Thà dừng chương trình báo lỗi rõ ràng còn hơn sinh khóa giả an toàn.
+>
+> **C5.8: Chạy `./dh.exe` 2 lần liên tiếp trong cùng 1 giây có bị trùng khóa như `srand(time(NULL))` không?**
+> - **Đáp:** **Tuyệt đối không!** Vì `randombytes()` lấy 256 bit từ CSPRNG hạt nhân hệ điều hành (liên tục cập nhật theo nhiễu phần cứng ở độ phân giải nanosecond và trạng thái nội bộ ChaCha20/AES-CTR DRBG của OS), không phụ thuộc vào mốc giây `time(NULL)`.
+>
+> **C5.9: Hạn chế về reseeding của SHAKE128 hiện tại là gì và chuẩn NIST SP 800-90A giải quyết ra sao?**
+> - **Đáp:** Hiện `prng_seed` chỉ nạp 32 byte entropy 1 lần lúc khởi động. Nếu một tiến trình chạy dài ngày (server chạy nhiều tháng) và chẳng may trạng thái `keccak_state` trong RAM bị lộ tại thời điểm `t`, kẻ tấn công có thể dự đoán toàn bộ đầu ra từ `t` trở đi. Chuẩn NIST SP 800-90A bổ sung cơ chế **Reseeding** (nạp thêm entropy OS mới định kỳ sau mỗi `N` yêu cầu hoặc sau khoảng thời gian `T`) để đạt tính **Post-compromise security / Prediction resistance**.
+
+---
+
+## 4.6. Nhóm 6 — Diffie-Hellman, Toán học Nhóm & An toàn Mật mã (10 câu)
+
+> **C6.1: Chứng minh tại sao bí mật chung của Alice và Bob luôn bằng nhau?**
+> - **Đáp:** Alice gửi $A = g^a \bmod p$, Bob gửi $B = g^b \bmod p$. Theo tính chất lũy thừa đồng dư trong nhóm nhân $\mathbb{Z}_p^{\ast}$: $s_A \equiv B^a \equiv (g^b)^a = g^{ba} = g^{ab} \equiv (g^a)^b \equiv A^b \equiv s_B \pmod p$. Vì cả hai đều nằm trong `[0, p - 1]` nên $s_A = s_B$ bằng nhau tuyệt đối.
+>
+> **C6.2: Phân biệt 3 bài toán độ khó DLP, CDH và DDH trong Diffie-Hellman. Mối quan hệ giữa chúng là gì?**
+> - **Đáp:**
+>   - **DLP (Discrete Logarithm Problem):** Cho `(p, g, g^a)`, tìm `a`.
+>   - **CDH (Computational Diffie-Hellman):** Cho `(p, g, g^a, g^b)`, tìm `g^(ab) mod p`.
+>   - **DDH (Decisional Diffie-Hellman):** Cho `(p, g, g^a, g^b, Z)`, phân biệt `Z` là bí mật chung thật `g^(ab)` hay một phần tử ngẫu nhiên `g^c`.
+>   - **Quan hệ quy dẫn:** Nếu giải được DLP ⇒ tính được `a` ⇒ giải được CDH; nếu giải được CDH ⇒ tính được `g^(ab)` so với `Z` ⇒ giải được DDH. Vậy về độ khó: **DDH ≤ CDH ≤ DLP** (giả thuyết DDH là giả thuyết mạnh nhất).
+>
+> **C6.3: (Câu điểm 10) Tại sao giả thuyết DDH bị PHÁ VỠ trên toàn bộ $\mathbb{Z}_p^{\ast}$ (khi `g` bậc `2q`), nhưng vẫn AN TOÀN trên nhóm con $Q_p$ bậc `q` (khi `g = 4`)?**
+> - **Đáp:** Nếu `g` có bậc `2q` (căn nguyên thủy của $\mathbb{Z}_p^{\ast}$), kẻ tấn công dễ dàng tính ký hiệu Legendre trong thời gian đa thức:
+>   - $\left(\frac{g^a}{p}\right) = (-1)^a$ ⇒ biết ngay `a` chẵn hay lẻ!
+>   - $\left(\frac{g^b}{p}\right) = (-1)^b$ ⇒ biết ngay `b` chẵn hay lẻ!
+>   - Từ đó suy ra ngay `a * b` chẵn hay lẻ ⇒ biết trước ký hiệu Legendre bắt buộc của `g^(ab)` là `(-1)^(ab)`. Nếu bộ thử `(g^a, g^b, Z)` có `Z` ngẫu nhiên với ký hiệu Legendre ngược lại (xác suất 50%), kẻ tấn công phân biệt được ngay ⇒ **DDH bị phá!**
+>   - Ngược lại, trong nhóm con thặng dư bậc hai $Q_p$ cấp nguyên tố `q` (do `g = 4 = 2^2` sinh ra), **mọi** phần tử đều có ký hiệu Legendre bằng `+1`, nên phép thử này hoàn toàn vô dụng và giả thuyết DDH được bảo toàn!
+>
+> **C6.4: Tại sao khóa riêng `a, b` lấy trong `[2, p - 2]`? Nếu lấy `a = 0`, `a = 1`, `a = p - 1` thì sao?**
+> - **Đáp:**
+>   - `a = 0` ⇒ $A = g^0 = 1$, `s = 1` (lộ hoàn toàn).
+>   - `a = 1` ⇒ `A = g` (kẻ nghe lén thấy `A == g` biết ngay `a = 1` ⇒ tính ngay `s = B^1 = B`!).
+>   - `a = p - 1` ⇒ theo Fermat nhỏ $A = g^{p-1} \equiv 1 \pmod p$, `s = 1` (lộ hoàn toàn).
+>   - Do đó đề bài yêu cầu khóa riêng nằm trong `[2, p - 2]`. *(Mở rộng thêm điểm cộng: vì nhóm dùng `g` bậc `q`, nếu thu hẹp nữa về `[2, q - 1]` thì ánh xạ $a \mapsto g^a \bmod p$ là song ánh 1-1 trên $Q_p \setminus \{1\}$, tránh cả khả năng `a = q` cực hiếm).*
+>
+> **C6.5: Giải thích ngắn gọn thuật toán Pohlig-Hellman — vì sao Safe Prime làm nó vô hiệu?**
+> - **Đáp:** Nếu cấp nhóm $p - 1 = \prod q_i^{e_i}$, Pohlig-Hellman hạ bài toán DLP từ nhóm lớn xuống từng nhóm con cấp $q_i^{e_i}$, giải từng phần $a \bmod q_i^{e_i}$ với độ phức tạp chỉ $O(\sqrt{q_i})$ (bằng Baby-Step Giant-Step hoặc Pollard's rho), rồi ghép lại bằng **Định lý Thặng dư Trung Hoa (CRT)**. Độ khó chỉ phụ thuộc vào **ước nguyên tố lớn nhất của `p - 1`**. Với Safe Prime $p - 1 = 2q$, ước nguyên tố lớn nhất chính là `q` có độ dài `(b - 1)` bit (511 bit cho 512-bit `p`), khiến $O(\sqrt{q}) \approx 2^{255}$ bất khả thi!
+>
+> **C6.6: Sau khi có bí mật chung `s`, tại sao trong TLS/SSH không dùng thẳng `s` làm khóa AES mà phải đưa qua KDF (HKDF)?**
+> - **Đáp:** Hai lý do: (1) Giá trị `s` nằm trong `[1, p - 1]` nên không có phân phối bit nhị phân đều tuyệt đối (các bit cao bị giới hạn bởi cấu trúc của `p`), và bản thân `s` dài 512/2048 bit trong khi khóa AES chỉ cần 128/256 bit; (2) KDF (như HKDF dùng HMAC-SHA256) vừa **trích xuất (Extract)** entropy đồng đều vào chuỗi bit ngẫu nhiên chuẩn, vừa **mở rộng (Expand)** gắn kèm bản ghi bắt tay (transcript hash) để tạo nhiều khóa độc lập (khóa mã hóa chiều đi, chiều về, khóa MAC/IV).
+>
+> **C6.7: Phân biệt Static DH và Ephemeral DH (DHE)? Chương trình của nhóm là loại nào?**
+> - **Đáp:** Static DH dùng lại cặp khóa `(a, A)` cố định qua nhiều phiên (không có Forward Secrecy). Ephemeral DH (DHE) sinh khóa riêng mới `a, b` cho **mỗi phiên** rồi hủy. Chương trình của nhóm mỗi lần chạy đều gọi `generate_private_key(&ctx, p)` lấy từ entropy mới của OS ⇒ đây chính là mô hình **Ephemeral DH (DHE)**.
+>
+> **C6.8: So sánh FFDHE (đồ án), ECDHE (TLS 1.3 hiện đại) và ML-KEM/Kyber (Hậu lượng tử)?**
+> - **Đáp:**
+>   - **FFDHE ($\mathbb{Z}_p^{\ast}$):** Dựa trên DLP trên trường hữu hạn; để đạt 128-bit bảo mật cần `p` dài **3072 bit** (chậm, gói tin lớn) vì có thuật toán sub-exponential Sàng trường số (NFS).
+>   - **ECDHE (X25519 / P-256):** Dựa trên ECDLP trên đường cong Elliptic; chưa có thuật toán sub-exponential nên chỉ cần khóa **256 bit** đã đạt 128-bit bảo mật (nhanh hơn và gọn hơn rất nhiều).
+>   - **ML-KEM / Kyber (NIST FIPS 203):** Cả FFDHE lẫn ECDHE đều bị **thuật toán Shor** trên máy tính lượng tử phá vỡ trong thời gian đa thức; vì vậy thế giới đang chuyển sang trao đổi khóa lai (Hybrid X25519 + ML-KEM-768) dựa trên bài toán lưới (Module-LWE) kháng lượng tử. *(Thú vị: chính file `fips202.cpp` trong bài của nhóm lấy từ mã nguồn tham khảo của PQ-Crystals Kyber!)*
+>
+> **C6.9: Kẻ nghe lén thụ động thấy trọn `p, g, A, B` và biết rõ mã nguồn nhóm. Hắn có lợi thế gì không?**
+> - **Đáp:** Theo **Nguyên lý Kerckhoffs**, biết mã nguồn không giúp ích gì cho kẻ tấn công miễn là nguồn entropy OS (`randombytes`) bí mật và `p` đủ lớn. Kẻ nghe lén buộc phải giải bài toán CDH/DLP trên nhóm con bậc `q`.
+>
+> **C6.10: Số nguyên tố 512-bit trong bài hiện nay có còn an toàn để dùng ngoài thực tế (Internet) không?**
+> - **Đáp:** **Không.** Từ năm 2015 (nghiên cứu Logjam), 512-bit DH đã có thể bị tiền tính phá trong vài ngày trên cụm máy tính học thuật (và nay còn nhanh hơn nữa). 512-bit trong đồ án dùng để minh họa nguyên lý và chạy demo nhanh; theo khuyến nghị NIST / RFC 8446, triển khai thực tế FFDH bắt buộc tối thiểu **2048 bit** (112-bit security) hoặc **3072 bit** (128-bit security).
+
+---
+
+## 4.7. Nhóm 7 — Kiểm thử, Hiệu năng & Kinh nghiệm Debug thực tế (6 câu)
+
+> **C7.1: Nhóm đã làm những gì để chứng minh thư viện `big_t` và `dh.cpp` không có bug ẩn ở ca biên?**
+> - **Đáp:** Nhóm xây dựng 2 lớp kiểm thử độc lập (trong `tests/`):
+>   1. **Unit test C++ thuần:** `test_bigint.cpp` (ca biên `0`, `1`, tràn limb $2^{64}-1$, dịch đúng 64 bit, `AddMod`/`MultMod`/`ExpMod`), `test_prng_prime.cpp` (determinism, entropy, phân phối `random_range`, 7 số Carmichael kinh điển `561..41041`, số Mersenne $2^{127}-1$, toàn trình 64/128/512-bit DH), `test_dh.cpp` (kiểm tra trên nhóm chuẩn RFC 2409 Oakley Group 2 1024-bit).
+>   2. **Differential Testing (Crosscheck với Python):** `crosscheck_bigint.py` (30.000 phép toán), `crosscheck_div_stress.py` (50.016 phép chia "hiểm" kích hoạt 3.242 lần nhánh cộng bù Knuth D), `crosscheck_modexp.py` (4.452 ca so với `pow(b, e, m)` của Python) — tổng > 84.000 ca thử, **0 sai lệch**.
+>
+> **C7.2: Kể lại 1–2 lỗi (bug) thực tế khó chịu nhất nhóm gặp phải khi làm đồ án và cách giải quyết?**
+> - **Đáp:** Có 3 kinh nghiệm debug thực tế rất đáng nhớ:
+>   1. **Lỗi `rand_s` trên Windows MinGW-w64:** Khi `<iostream>` được include trước `prng.cpp`, `<stdlib.h>` đã nạp ngầm trước khi `#define _CRT_RAND_S` có tác dụng, gây lỗi `'rand_s' was not declared`; khi tự khai báo lại thì dính cảnh báo `redeclared without dllimport attribute`. Nhóm khắc phục triệt để bằng cách đặt `#define _CRT_RAND_S` ở dòng 14 đầu `main.cpp` và thêm khai báo khớp `#if defined(_CRTIMP) extern "C" _CRTIMP ...` trong `prng.cpp`.
+>   2. **Điểm nghẽn hiệu năng phép chia:** Bản đầu dùng chia nhị phân tốn `72–116 µs` cho 1 phép `mulmod` 512-bit khiến sinh safe prime mất nhiều giây; sau khi Mạnh thay bằng **Knuth Algorithm D**, thời gian `mulmod` giảm hơn 160 lần xuống còn `0.44 µs`, giúp toàn chương trình chạy mượt `< 0.5s`!
+>   3. **Lỗi `ld.exe` với đường dẫn tiếng Việt trên Windows:** Khi biên dịch truyền đường dẫn output chứa dấu tiếng Việt, MinGW `ld.exe` báo `Invalid argument` ⇒ khắc phục bằng `cd` vào thư mục và dùng đường dẫn tương đối / thư mục không dấu.
+>
+> **C7.3: Tại sao nhóm đo thời gian bằng `std::chrono::high_resolution_clock` / `steady_clock` mà không dùng `clock()` hay `time()`?**
+> - **Đáp:** `time()` chỉ có độ phân giải theo **giây** (không đo được `modular_exponentiation` chỉ mất `0.00024 giây`!); `clock()` đo CPU time và có độ phân giải thấp trên Windows (~1–15 ms). `std::chrono` (có từ C++11, hoàn toàn chuẩn C++14) đo thời gian thực (wall-clock) chính xác tới mức micro-giây / nano-giây và tương thích đa nền tảng.
+>
+> **C7.4: Làm sao nhóm kiểm thử riêng `dh.cpp` khi lúc đầu `generate_safe_prime` chưa viết xong?**
+> - **Đáp:** Nhóm tách kiểm thử độc lập bằng cách hardcode sẵn **Oakley Group 2 (1024-bit safe prime chuẩn RFC 2409)** và một safe prime 512-bit đã kiểm chứng sẵn vào `tests/test_dh.cpp` — nhờ đó Mạnh hoàn thành và kiểm chứng 100% `dh.cpp` song song trong lúc Minh đang phát triển `prime.cpp`.
+>
+> **C7.5: Nếu người dùng nhập tham số CLI sai (như `--bits 0`, `--bits 512abc`, `--seed 1234`, `--rounds 0`) thì chương trình có crash không?**
+> - **Đáp:** Không bao giờ crash! Mọi tham số đều được parse bằng `strtoul`/`strtol` kèm kiểm tra con trỏ `end` (`end == argv[i] || *end != '\0'`), kiểm tra miền giá trị (`rounds` trong `[1, 1000]`, `bit_size <= MAX_PRIME_BITS`, `seed` đủ 64 ký tự hex qua `isxdigit(unsigned char)`), in thông báo lỗi rõ ràng ra `stderr` và thoát sạch với mã lỗi `1`.
+>
+> **C7.6: Vì sao trong `crosscheck_div_stress.py`, bộ test phải tự chế các số "hiểm" toàn bit 0 và 1 thay vì chỉ dùng số ngẫu nhiên?**
+> - **Đáp:** Vì với số ngẫu nhiên đều, xác suất nhánh cộng bù D5/D6 của Knuth D được thực thi chỉ là $\approx 2 / 2^{64} \approx 10^{-19}$ — chạy 1 tỷ năm cũng không chạm tới nhánh đó lần nào! Chỉ khi cố tình tạo số có `v_hi` sát $2^{63}$, `v_lo` sát $2^{64}-1$, và `u` khớp biên thì nhánh D5/D6 mới được kích hoạt (3.242 lần) để chứng minh không có bug.
+
+---
+
+## 4.8. Nhóm 8 — Câu hỏi "Bẫy" & Phản biện Điểm 10 (6 câu)
+
+> **C8.1 [BẪY]: *"Miller-Rabin là thuật toán xác suất với sai số $\le 4^{-40}$. Vậy nếu nó trả về `false` (hợp số) thì vẫn có xác suất nhỏ nó đoán nhầm số nguyên tố thành hợp số đúng không?"***
+> - **Đáp (Gỡ bẫy dứt khoát):** **KHÔNG ĐÚNG ạ!** Miller-Rabin là thuật toán xác suất **sai số một phía**. Nếu `n` là số nguyên tố thật, mọi cơ sở `a` trong `[2, n - 2]` đều thỏa định lý Fermat nhỏ và không bao giờ tạo ra căn bậc hai không tầm thường của `1`, nên thuật toán **không bao giờ** trả về `false` cho số nguyên tố. Xác suất $\le 4^{-40}$ chỉ xảy ra ở chiều ngược lại (hợp số bị lọt lưới thành `true`).
+>
+> **C8.2 [BẪY]: *"Trong chương trình, phần tử sinh `g = 4` sinh ra toàn bộ nhóm nhân $\mathbb{Z}_p^{\ast}$ đúng không?"***
+> - **Đáp (Gỡ bẫy dứt khoát):** **KHÔNG ạ!** Toàn bộ $\mathbb{Z}_p^{\ast}$ có cấp `p - 1 = 2q`. Phần tử `g = 4 = 2^2` là thặng dư bậc hai nên chỉ sinh ra **nhóm con thặng dư bậc hai $Q_p$ có cấp nguyên tố `q`** (đúng bằng một nửa $\mathbb{Z}_p^{\ast}$). Đây là chủ ý thiết kế để loại bỏ rò rỉ bit chẵn/lẻ của khóa riêng qua ký hiệu Legendre và đảm bảo giả thuyết DDH vẫn khó!
+>
+> **C8.3 [BẪY]: *"Trong báo cáo em chê `rand()` không an toàn, thế sao trong `prng.cpp` em lại gọi `rand_s()` của C++ trên Windows? Có tự mâu thuẫn không?"***
+> - **Đáp (Gỡ bẫy dứt khoát):** **Không mâu thuẫn ạ!** Tuy tên gần giống nhau và cùng nằm trong `<stdlib.h>`, nhưng `rand()` là bộ sinh LCG tuyến tính yếu cài trong thư viện C chuẩn (`RAND_MAX = 32767`), còn `rand_s()` là API bảo mật riêng của Windows CRT gọi thẳng xuống **CSPRNG cấp hạt nhân hệ điều hành Windows (`RtlGenRandom` / `BCryptGenRandom`)**, lấy entropy phần cứng giống hệt `getrandom()` trên Linux.
+>
+> **C8.4 [BẪY]: *"Chương trình in ra `[XAC MINH THANH CONG] Bi mat chung hai ben hoan toan TRUNG KHOP!`, vậy đã đủ kết luận kênh trao đổi khóa này an toàn tuyệt đối ngoài thực tế chưa?"***
+> - **Đáp (Gỡ bẫy dứt khoát):** **Chưa ạ!** Việc `s_A == s_B` chỉ chứng minh hai bên tính toán đúng giao thức DH. Để an toàn ngoài thực tế Internet, cần thêm 4 điều kiện nữa: (1) **Xác thực danh tính** bằng chữ ký số + chứng chỉ CA để chống Man-in-the-Middle; (2) **Tăng độ dài `p` lên tối thiểu 2048–3072 bit** (hoặc chuyển sang ECDHE X25519) để chống Logjam/NFS; (3) **Đưa `s` qua KDF (HKDF)** trước khi làm khóa AES; (4) **Thực thi constant-time (Montgomery Ladder)** để chống tấn công kênh kề thời gian.
+>
+> **C8.5 [BẪY]: *"Tầng 2–3 của em chạy `miller_rabin_base2` đã loại hơn 99.99% hợp số rồi, thế sao không bỏ luôn Tầng 4 (40 vòng) đi cho nhanh hơn nữa?"***
+> - **Đáp (Gỡ bẫy dứt khoát):** **Tuyệt đối không được bỏ Tầng 4 ạ!** Vì tồn tại vô hạn **số giả nguyên tố mạnh cơ sở 2** (strong base-2 pseudoprimes) — ví dụ nhỏ nhất là `2047 = 23 × 89`, là hợp số nhưng vẫn vượt qua `miller_rabin_base2`! Thậm chí kẻ tấn công biết ta chỉ kiểm tra cơ sở cố định có thể chủ động tạo hợp số vượt qua mọi cơ sở cố định đã biết (phương pháp Arnault 1995). Tầng 4 với 40 cơ sở chọn ngẫu nhiên độc lập là bắt buộc để đạt cận sai số $\le 4^{-40}$.
+>
+> **C8.6 [BẪY — ĐIỂM 10]: *"Em chọn khóa riêng `a` trong `[2, p - 2]` theo yêu cầu đề bài, còn `g = 4` có bậc `q = (p - 1)/2`. Vậy có bao giờ `a` rơi trúng vào `q` làm cho $A = g^q \bmod p = 1$ không?"***
+> - **Đáp (Gỡ bẫy đẳng cấp):** **Có thể xảy ra về mặt lý thuyết ạ!** Vì `q = (p - 1)/2` nằm trong `[2, p - 2]`, xác suất `a` trúng đúng `q` là $1 / (p - 3) \approx 2^{-512}$ (cực kỳ nhỏ, thực tế không bao giờ xảy ra trong tuổi thọ vũ trụ). Dù vậy, chương trình vẫn có chốt kiểm tra `is_valid_public_value(A, p)` ở `main.cpp` sẽ phát hiện ngay `A == 1` không hợp lệ và dừng an toàn. Còn nếu muốn loại trừ triệt để ngay từ bước sinh khóa, chỉ cần thu hẹp khoảng sinh khóa riêng trong `generate_private_key` từ `[2, p - 2]` về `[2, q - 1]` — khi đó ánh xạ $a \mapsto g^a \bmod p$ là **song ánh 1-1** lên toàn bộ $Q_p \setminus \{1\}$ (và mỗi khóa công khai `A` ứng với đúng 1 khóa riêng duy nhất thay vì 2 giá trị `a` và `a + q`!).
