@@ -28,7 +28,7 @@
   - [3.4. File `dh.cpp` (170 dòng) — Số học Mô-đun & Trao đổi khóa Diffie-Hellman](#34-file-dhcpp-170-dòng--số-học-mô-đun--trao-đổi-khóa-diffie-hellman)
   - [3.5. File `prime.cpp` (484 dòng) — Rejection Sampling, Miller-Rabin & Sinh Safe Prime](#35-file-primecpp-484-dòng--rejection-sampling-miller-rabin--sinh-safe-prime)
   - [3.6. File `main.cpp` (201 dòng) — Chương trình chính & Giao diện CLI](#36-file-maincpp-201-dòng--chương-trình-chính--giao-diện-cli)
-- [PHẦN 4: NGÂN HÀNG CÂU HỎI VẤN ĐÁP TOÀN DIỆN (72 CÂU TỪ TỔNG QUAN ĐẾN HỎI XOÁY)](#phần-4-ngân-hàng-câu-hỏi-vấn-đáp-toàn-diện-72-câu-từ-tổng-quan-đến-hỏi-xoáy)
+- [PHẦN 4: NGÂN HÀNG CÂU HỎI VẤN ĐÁP TOÀN DIỆN (84 CÂU TỪ TỔNG QUAN ĐẾN HỎI XOÁY)](#phần-4-ngân-hàng-câu-hỏi-vấn-đáp-toàn-diện-84-câu-từ-tổng-quan-đến-hỏi-xoáy)
   - [4.1. Nhóm 1 — Tổng quan Dự án, Kết quả, Hạn chế & Làm việc nhóm (10 câu)](#41-nhóm-1--tổng-quan-dự-án-kết-quả-hạn-chế--làm-việc-nhóm-10-câu)
   - [4.2. Nhóm 2 — Tư duy Thiết kế & Kiến trúc Hệ thống (8 câu)](#42-nhóm-2--tư-duy-thiết-kế--kiến-trúc-hệ-thống-8-câu)
   - [4.3. Nhóm 3 — BigInt, Phép chia Knuth D & Số học Mô-đun (12 câu)](#43-nhóm-3--bigint-phép-chia-knuth-d--số-học-mô-đun-12-câu)
@@ -37,6 +37,7 @@
   - [4.6. Nhóm 6 — Diffie-Hellman, Toán học Nhóm & An toàn Mật mã (10 câu)](#46-nhóm-6--diffie-hellman-toán-học-nhóm--an-toàn-mật-mã-10-câu)
   - [4.7. Nhóm 7 — Kiểm thử, Hiệu năng & Kinh nghiệm Debug thực tế (6 câu)](#47-nhóm-7--kiểm-thử-hiệu-năng--kinh-nghiệm-debug-thực-tế-6-câu)
   - [4.8. Nhóm 8 — Câu hỏi "Bẫy" & Phản biện Điểm 10 (6 câu)](#48-nhóm-8--câu-hỏi-bẫy--phản-biện-điểm-10-6-câu)
+  - [4.9. Nhóm 9 — Câu hỏi trực tiếp về Video Demo, Lệnh Biên dịch & Output Chương trình (12 câu)](#49-nhóm-9--câu-hỏi-trực-tiếp-về-video-demo-lệnh-biên-dịch--output-chương-trình-12-câu)
 
 ---
 
@@ -1290,9 +1291,9 @@ Phần này đi qua **từng dòng / từng câu lệnh theo đúng thứ tự t
 
 ---
 
-# PHẦN 4: NGÂN HÀNG CÂU HỎI VẤN ĐÁP TOÀN DIỆN (72 CÂU TỪ TỔNG QUAN ĐẾN HỎI XOÁY)
+# PHẦN 4: NGÂN HÀNG CÂU HỎI VẤN ĐÁP TOÀN DIỆN (84 CÂU TỪ TỔNG QUAN ĐẾN HỎI XOÁY)
 
-Phần này tổng hợp **72 câu hỏi thực chiến** theo mức độ từ bao quát nhất (tổng quan dự án, cái làm được / chưa làm được, làm việc nhóm) đến sâu nhất (tư duy thiết kế, chi tiết code, toán học mật mã, kiểm thử, debug và các câu hỏi "bẫy"). Hãy luyện trả lời thành tiếng từng câu theo công thức **3 bước: Khẳng định trực tiếp → Giải thích nguyên nhân → Dẫn chứng đúng file/số liệu trong bài**.
+Phần này tổng hợp **84 câu hỏi thực chiến** theo mức độ từ bao quát nhất (tổng quan dự án, cái làm được / chưa làm được, làm việc nhóm) đến sâu nhất (tư duy thiết kế, chi tiết code, toán học mật mã, kiểm thử, debug, câu hỏi "bẫy" và các câu hỏi bám sát video demo). Hãy luyện trả lời thành tiếng từng câu theo công thức **3 bước: Khẳng định trực tiếp → Giải thích nguyên nhân → Dẫn chứng đúng file/số liệu trong bài**.
 
 ---
 
@@ -1602,3 +1603,74 @@ Phần này tổng hợp **72 câu hỏi thực chiến** theo mức độ từ 
 >
 > **C8.6 [BẪY — ĐIỂM 10]: *"Em chọn khóa riêng `a` trong `[2, p - 2]` theo yêu cầu đề bài, còn `g = 4` có bậc `q = (p - 1)/2`. Vậy có bao giờ `a` rơi trúng vào `q` làm cho $A = g^q \bmod p = 1$ không?"***
 > - **Đáp (Gỡ bẫy đẳng cấp):** **Có thể xảy ra về mặt lý thuyết ạ!** Vì `q = (p - 1)/2` nằm trong `[2, p - 2]`, xác suất `a` trúng đúng `q` là $1 / (p - 3) \approx 2^{-512}$ (cực kỳ nhỏ, thực tế không bao giờ xảy ra trong tuổi thọ vũ trụ). Dù vậy, chương trình vẫn có chốt kiểm tra `is_valid_public_value(A, p)` ở `main.cpp` sẽ phát hiện ngay `A == 1` không hợp lệ và dừng an toàn. Còn nếu muốn loại trừ triệt để ngay từ bước sinh khóa, chỉ cần thu hẹp khoảng sinh khóa riêng trong `generate_private_key` từ `[2, p - 2]` về `[2, q - 1]` — khi đó ánh xạ $a \mapsto g^a \bmod p$ là **song ánh 1-1** lên toàn bộ $Q_p \setminus \{1\}$ (và mỗi khóa công khai `A` ứng với đúng 1 khóa riêng duy nhất thay vì 2 giá trị `a` và `a + q`!).
+
+---
+
+## 4.9. Nhóm 9 — Câu hỏi trực tiếp về Video Demo, Lệnh Biên dịch & Output Chương trình (12 câu)
+
+*(Nhóm câu hỏi thầy rất hay hỏi ngay sau khi xem xong video demo 1–2 phút của em!)*
+
+> **C9.1: Tóm tắt ngắn gọn trong video demo vừa rồi em đã thực hiện và chứng minh được những gì?**
+> - **Đáp:** Video demo chứng minh trọn vẹn 5 điều từ bản bài nộp chính thức trên Moodle:
+>   1. **Tính nguyên bản & đúng cấu trúc bài nộp:** Tải trực tiếp file `24120070-24120089-24120091.zip` từ Moodle, giải nén ra đúng 2 thư mục `project_01_source` (chỉ có 6 file `.cpp`, không file rác/header/binary) và `project_01_report` (`report.pdf`).
+>   2. **Biên dịch sạch chuẩn C++14:** Biên dịch chỉ bằng 1 lệnh `g++ -std=c++14 -O2 -Wall -Wextra -Wpedantic -o dh.exe main.cpp` đạt **0 lỗi, 0 cảnh báo**.
+>   3. **Thực thi mặc định 512-bit:** Chạy `.\dh.exe`, sinh thành công Safe Prime đúng 512-bit trong ~0.3–0.5s, chọn `g = 4`, sinh khóa riêng `a, b`, xác thực khóa công khai `A, B` và chứng minh bí mật chung `s_A == s_B`.
+>   4. **Khả năng mở rộng tham số CLI:** Chạy `--help` và `--bits 1024 --rounds 40` để chứng minh có thể tăng kích thước lên 1024-bit và điều chỉnh số vòng Miller-Rabin mà không cần sửa code.
+>   5. **Tính tái lập để kiểm thử (`--seed`):** Chạy với chuỗi hex 64 ký tự cố định để chứng minh chế độ debug tất định hoạt động đúng.
+>
+> **C9.2: Giải thích ý nghĩa từng cờ trong lệnh biên dịch `g++ -std=c++14 -O2 -Wall -Wextra -Wpedantic -o dh.exe main.cpp`! Tại sao lại dùng đầy đủ các cờ này?**
+> - **Đáp:**
+>   - `g++`: Trình biên dịch C++ của GCC (MSYS2 MinGW-w64 trên Windows).
+>   - `-std=c++14`: **Ép tuân thủ nghiêm ngặt chuẩn C++14** theo đúng quy định của `Lab01.pdf` (nếu lỡ dùng tính năng C++17/20 sẽ báo lỗi ngay).
+>   - `-O2`: Bật mức tối ưu hóa bậc 2 (tối ưu thanh ghi, inline các hàm nhỏ như `test_bit`, `is_odd`, tăng tốc vòng lặp Knuth D và Miller-Rabin lên gấp 5–10 lần so với không tối ưu `-O0`).
+>   - `-Wall -Wextra`: Bật toàn bộ các cảnh báo thông dụng và cảnh báo mở rộng (biến chưa dùng, so sánh signed/unsigned, nhánh thiếu `return`...) để chứng minh code viết cẩn thận, sạch 0 warning.
+>   - `-Wpedantic`: Bật chế độ kiểm tra khắt khe nhất theo đúng chuẩn ISO C++14 (nhờ dòng `__extension__ typedef unsigned __int128 uint128_t;` ở dòng 21 `bigint.cpp`, code vẫn sạch 0 warning ngay cả dưới `-Wpedantic`!).
+>   - `-o dh.exe`: Chỉ định tên file thực thi đầu ra là `dh.exe`.
+>   - `main.cpp`: File nguồn đầu vào duy nhất theo mô hình Unity Build.
+>
+> **C9.3: Nếu bỏ cờ `-O2` đi (chỉ chạy `g++ -std=c++14 -o dh.exe main.cpp`) thì chương trình có chạy đúng không? Khác gì so với có `-O2`?**
+> - **Đáp:** Chương trình vẫn biên dịch sạch và **chạy ra kết quả đúng 100%** (thuật toán không hề phụ thuộc vào cờ tối ưu). Chỉ khác về **tốc độ**: không có `-O2`, các hàm ngắn trong `uint_t<N>` (như `test_bit`, `operator+`, vòng lặp Knuth D) không được inline và không tối ưu thanh ghi nên thời gian sinh Safe Prime 512-bit sẽ chậm hơn khoảng **5–8 lần** (từ ~0.4s tăng lên ~2–3s).
+>
+> **C9.4: Trong thư mục `project_01_source` có 6 file `.cpp`, tại sao trong lệnh biên dịch em chỉ ghi mỗi `main.cpp`?**
+> - **Đáp:** Vì nhóm thiết kế theo mô hình **Unity Build** (Single Translation Unit): đầu file `main.cpp` (dòng 25–29) đã `#include` tuần tự 5 file còn lại (`fips202.cpp`, `prng.cpp`, `bigint.cpp`, `dh.cpp`, `prime.cpp`) theo đúng thứ tự phụ thuộc, mỗi file có include guard `#ifndef ..._CPP`. Nhờ đó thầy chỉ cần biên dịch đúng 1 file `main.cpp` duy nhất mà không cần Makefile.
+>
+> **C9.5: Lệnh `.\dh.exe` khác gì `dh.exe` hay `./dh`? Nếu chạy trên Linux (máy thầy chấm) thì gõ lệnh gì?**
+> - **Đáp:** Trong **PowerShell** trên Windows, vì lý do bảo mật shell không chạy file thực thi nằm ở thư mục hiện hành nếu chỉ gõ `dh.exe` mà bắt buộc chỉ rõ đường dẫn tương đối `.\dh.exe`. Trên **Linux / macOS / WSL**, chỉ cần đổi đuôi file ra và dấu gạch chéo thành:
+>   - Biên dịch: `g++ -std=c++14 -O2 -Wall -Wextra -Wpedantic -o dh main.cpp`
+>   - Chạy: `./dh` (hoặc `./dh --bits 1024 --rounds 40`)
+>   Toàn bộ mã nguồn C++ **không cần sửa bất kỳ dòng nào** vì `prng.cpp` đã tự động chuyển từ `rand_s()` sang `getrandom()` qua `#ifdef _WIN32`.
+>
+> **C9.6: Trong video em chạy `.\dh.exe --help`, `.\dh.exe --bits 1024 --rounds 40` và `.\dh.exe --seed ...` — những tham số này được chương trình đọc và xử lý như thế nào?**
+> - **Đáp:** Chúng được truyền vào `int main(int argc, char *argv[])` và duyệt qua vòng lặp `for (int i = 1; i < argc; i++)` ở dòng 49–85 `main.cpp`:
+>   - `--help` / `-h`: Gọi `print_usage(argv[0])` in hướng dẫn và thoát với mã `0`.
+>   - `--bits <N>`: Parse bằng `std::strtoul` thành `bit_size`, kiểm tra `> 0` và `<= MAX_PRIME_BITS` (1024), truyền vào `generate_safe_prime(&ctx, bit_size, rounds)`.
+>   - `--rounds <K>`: Parse bằng `std::strtol` thành `rounds`, kiểm tra nằm trong `[1, 1000]`, truyền vào số vòng lặp kiểm tra Miller-Rabin.
+>   - `--seed <HEX>`: Kiểm tra đủ 64 ký tự hex hợp lệ (`isxdigit`), đổi từng cặp 2 ký tự hex thành 32 byte nạp vào `prng_seed(&ctx, seed, 32)` thay vì gọi `randombytes()` từ OS.
+>
+> **C9.7: Tại sao trong lệnh `--seed` của video, chuỗi hex bắt buộc phải có đúng 64 ký tự?**
+> - **Đáp:** Vì mỗi 2 ký tự thập lục phân (hex) biểu diễn đúng **1 byte (8 bit)**, nên **64 ký tự hex = 32 byte = 256 bit** — khớp chính xác kích thước mảng `uint8_t seed[32]` và dung lượng bảo mật `capacity = 256` bit của SHAKE128! Nếu cho phép nhập chuỗi ngắn (như `"1234"`) thì phần còn lại của seed bị đệm toàn số 0; chương trình ép đúng 64 ký tự để chuẩn hóa độ dài seed 256-bit.
+>
+> **C9.8: Trong output video, tại sao thời gian Bước `[1]` (sinh `p` 512-bit) mất ~0.38 giây, còn Bước `[4]` (tính `A, B`) và Bước `[5]` (tính `s_A, s_B`) chỉ mất ~0.001 giây (nhanh hơn gần 400 lần)?**
+> - **Đáp:**
+>   - Ở Bước `[4]` và `[5]`, mỗi bước chỉ thực hiện đúng **2 lần `modular_exponentiation`** (mỗi lần ~0.24–0.5 ms ⇒ tổng chỉ ~1 ms).
+>   - Ở Bước `[1]` (`generate_safe_prime`), dù đã tối ưu sàng đồng thời 4 tầng, chương trình vẫn phải thử trung bình hàng chục nghìn ứng viên `q`, chạy sàng trên 302 số nguyên tố nhỏ, chạy hàng trăm lượt `miller_rabin_base2` (mỗi lượt là 1 lần `modular_exponentiation`), và cuối cùng chạy **80 vòng Miller-Rabin** (40 cho `q` + 40 cho `p`) — tổng cộng tương đương **hàng trăm lần `modular_exponentiation`**, nên lâu hơn Bước `[4]`/`[5]` vài trăm lần là hoàn toàn hợp lý về mặt lý thuyết!
+>
+> **C9.9: Giải thích ý nghĩa các dòng output hiện trên màn hình trong video demo:**
+> - **Đáp:**
+>   - `p = 86aee1... (p co dung 512 bit)`: Số nguyên tố an toàn `p = 2q + 1` biểu diễn dạng hệ thập lục phân (hex), đã được chốt kiểm tra `p.bit_length() == 512 && p.is_odd()` xác nhận đủ đúng 512 bit.
+>   - `g = 4` và `Kiem tra g != 1 va g^q mod p == 1: DUNG`: Phần tử sinh của nhóm con thặng dư bậc hai cấp nguyên tố `q = (p - 1)/2` (tránh rò rỉ tính chẵn/lẻ khóa riêng).
+>   - `Khoa rieng Alice a`, `Khoa rieng Bob b`: Hai khóa bí mật sinh bằng Rejection Sampling đều trong `[2, p - 2]`.
+>   - `Alice gui A = g^a mod p`, `Bob gui B = g^b mod p` và `Kiem tra gia tri cong khai hop le (trong [2, p-2] va A^q = B^q = 1): DUNG`: Hai giá trị trao đổi công khai đã qua xác thực chống tấn công nhóm con nhỏ.
+>   - `Bi mat chung s_A`, `s_B` và `[XAC MINH THANH CONG]`: Xác nhận `s_alice == s_bob` và `s_alice > 1` — trao đổi khóa hoàn tất chính xác.
+>
+> **C9.10: Tại sao các chuỗi hex in ra trong video cho 512-bit có độ dài đúng 128 ký tự (và cho 1024-bit là 256 ký tự)? Tại sao khóa riêng `a` đôi khi có thể ngắn hơn 128 ký tự 1–2 chữ số?**
+> - **Đáp:**
+>   - Mỗi ký tự hex biểu diễn đúng **4 bit**, nên 512 bit tương ứng `512 / 4 = 128` ký tự hex (1024 bit là `256` ký tự hex).
+>   - Với số nguyên tố `p`, vì bit cao nhất (bit 511) **luôn bằng 1** nên ký tự hex đầu tiên của `p` luôn nằm trong `8..f` (`1000..1111`), do đó `p` **luôn dài đúng 128 ký tự**.
+>   - Với khóa riêng `a, b` (hay `A, B, s`), vì chúng phân phối đều trong `[2, p - 2]` nên các bit cao nhất có thể bằng `0`, và hàm `to_hex()` không đệm số `0` thừa ở đầu limb cao nhất (`%llx`), nên chuỗi hex của `a, b, A, B, s` đôi khi có 127 hoặc 126 ký tự — đây là dấu hiệu bình thường của phân phối đều!
+>
+> **C9.11: Trong video thấy em lưu và giải nén file zip vào `D:\demo_dh` thay vì để ngay trong thư mục môn học `D:\Nhập môn Crypto` — có lý do kỹ thuật gì không?**
+> - **Đáp:** Có hai lý do thực tế: (1) Tránh lỗi trình liên kết `ld.exe` của MinGW trên Windows gặp sự cố với đường dẫn chứa ký tự tiếng Việt có dấu; (2) Giải nén vào một thư mục riêng trống trơn `D:\demo_dh` giúp video demo rõ ràng, chứng minh chỉ chạy đúng mã nguồn tải trực tiếp từ Moodle chứ không hề mượn file nào từ thư mục làm việc trước đó (đồng thời tránh chiếm dung lượng ổ C).
+>
+> **C9.12: Trong video giải nén file `.zip` từ Moodle chỉ thấy 6 file `.cpp` và `report.pdf`, vậy các file unit test (`test_bigint.cpp`, `bench_safe_prime.cpp`, `crosscheck_*.py`) mà nhóm nhắc tới trong báo cáo nằm ở đâu?**
+> - **Đáp:** Theo quy định bắt buộc của `Lab01.pdf`, file `.zip` nộp trên Moodle chỉ được phép chứa đúng `project_01_source/*.cpp` (mã nguồn nộp chấm) và `project_01_report/*.pdf` (báo cáo). Vì vậy toàn bộ bộ unit test, benchmark và script crosscheck được nhóm lưu giữ đầy đủ trên repository GitHub của nhóm (`tests/` và `docs/`), không đưa vào file `.zip` nộp bài để đảm bảo đúng quy chuẩn 100%. Nếu thầy muốn xem hoặc chạy trực tiếp bộ test/benchmark ngay bây giờ, em có thể mở repo lên chạy cho thầy kiểm chứng ạ!
